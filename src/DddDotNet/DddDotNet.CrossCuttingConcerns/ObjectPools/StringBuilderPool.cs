@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using System.Text;
 
-namespace DddDotNet.Infrastructure.ObjectPools;
+namespace DddDotNet.CrossCuttingConcerns.ObjectPools;
 
 public class StringBuilderPool
 {
