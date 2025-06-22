@@ -1,8 +1,8 @@
 ﻿using DddDotNet.Infrastructure.HealthChecks;
-using DddDotNet.Infrastructure.MessageBrokers.AzureQueue;
-using DddDotNet.Infrastructure.MessageBrokers.AzureServiceBus;
-using DddDotNet.Infrastructure.MessageBrokers.Kafka;
-using DddDotNet.Infrastructure.MessageBrokers.RabbitMQ;
+using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
+using DddDotNet.Infrastructure.Messaging.Kafka;
+using DddDotNet.Infrastructure.Messaging.RabbitMQ;
 using DddDotNet.Infrastructure.Notification.Email.Smtp;
 using DddDotNet.Infrastructure.Notification.Web.SignalR;
 using DddDotNet.Infrastructure.Storages.Amazon;

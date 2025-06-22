@@ -1,13 +1,13 @@
 ﻿using Azure.Messaging.EventGrid;
 using Azure.Storage.Queues;
-using DddDotNet.Infrastructure.MessageBrokers.AmazonSQS;
-using DddDotNet.Infrastructure.MessageBrokers.ApacheActiveMQ;
-using DddDotNet.Infrastructure.MessageBrokers.AzureEventHub;
-using DddDotNet.Infrastructure.MessageBrokers.AzureQueue;
-using DddDotNet.Infrastructure.MessageBrokers.AzureServiceBus;
-using DddDotNet.Infrastructure.MessageBrokers.GooglePubSub;
-using DddDotNet.Infrastructure.MessageBrokers.Kafka;
-using DddDotNet.Infrastructure.MessageBrokers.RabbitMQ;
+using DddDotNet.Infrastructure.Messaging.AmazonSQS;
+using DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
+using DddDotNet.Infrastructure.Messaging.AzureEventHub;
+using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
+using DddDotNet.Infrastructure.Messaging.GooglePubSub;
+using DddDotNet.Infrastructure.Messaging.Kafka;
+using DddDotNet.Infrastructure.Messaging.RabbitMQ;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Text;
@@ -53,7 +53,7 @@ class Program
         .Build();
 
         var amazonSqsOptions = new AmazonSqsOptions();
-        config.GetSection("MessageBroker:AmazonSQS").Bind(amazonSqsOptions);
+        config.GetSection("Messaging:AmazonSQS").Bind(amazonSqsOptions);
         var amazonSqs = new AmazonSqsReceiver<Message>(amazonSqsOptions);
         _ = amazonSqs.ReceiveAsync(async (message, metaData) =>
         {
@@ -62,7 +62,7 @@ class Program
         });
 
         var apacheActiveMqOptions = new ApacheActiveMQOptions();
-        config.GetSection("MessageBroker:ApacheActiveMQ").Bind(apacheActiveMqOptions);
+        config.GetSection("Messaging:ApacheActiveMQ").Bind(apacheActiveMqOptions);
         var apacheActiveMq = new ApacheActiveMQReceiver<Message>(apacheActiveMqOptions);
         _ = apacheActiveMq.ReceiveAsync(async (message, metaData) =>
         {
@@ -71,7 +71,7 @@ class Program
         });
 
         var azureQueue = new AzureQueueReceiver<Message>(
-            config["MessageBroker:AzureQueue:ConnectionString"],
+            config["Messaging:AzureQueue:ConnectionString"],
             "integration-test");
         _ = azureQueue.ReceiveAsync(async (message, metaData) =>
         {
@@ -80,7 +80,7 @@ class Program
         });
 
         var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(
-            config["MessageBroker:AzureServiceBus:ConnectionString"],
+            config["Messaging:AzureServiceBus:ConnectionString"],
             "integration-test");
         _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData) =>
         {
@@ -89,7 +89,7 @@ class Program
         });
 
         var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(
-            config["MessageBroker:AzureServiceBus:ConnectionString"],
+            config["Messaging:AzureServiceBus:ConnectionString"],
             "topic-integration-test",
             "sub-integration-test");
         _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData) =>
@@ -99,9 +99,9 @@ class Program
         });
 
         var azureEventHub = new AzureEventHubReceiver<Message>(
-            config["MessageBroker:AzureEventHub:ConnectionString"],
+            config["Messaging:AzureEventHub:ConnectionString"],
             "integration-test",
-            config["MessageBroker:AzureEventHub:StorageConnectionString"],
+            config["Messaging:AzureEventHub:StorageConnectionString"],
             "eventhub-integration-test");
         _ = azureEventHub.ReceiveAsync(async (message, metaData) =>
         {
@@ -110,7 +110,7 @@ class Program
         });
 
         var azureQueueEventGrid = new AzureQueueReceiver<EventGridEvent>(
-            config["MessageBroker:AzureQueue:ConnectionString"],
+            config["Messaging:AzureQueue:ConnectionString"],
             "event-grid-integration-test",
             QueueMessageEncoding.Base64);
         _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>
@@ -129,7 +129,7 @@ class Program
         });
 
         var googlePubSubOptions = new GooglePubSubOptions();
-        config.GetSection("MessageBroker:GooglePubSub").Bind(googlePubSubOptions);
+        config.GetSection("Messaging:GooglePubSub").Bind(googlePubSubOptions);
         var googlePubSub = new GooglePubSubReceiver<Message>(googlePubSubOptions);
         _ = googlePubSub.ReceiveAsync(async (message, metaData) =>
         {
@@ -144,7 +144,7 @@ class Program
             //MessageEncryptionEnabled = true,
             MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4="
         };
-        config.GetSection("MessageBroker:RabbitMQ").Bind(rabbitMQReceiverOptions);
+        config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
         var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions);
         _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData) =>
         {

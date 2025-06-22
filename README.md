@@ -20,21 +20,21 @@
   | SMB | ✅ | | [/Storages/Smb](/src/DddDotNet/DddDotNet.Infrastructure/Storages/Smb) |
   | Win32 Network Share | ✅ | | [/Storages/WindowsNetworkShare](/src/DddDotNet/DddDotNet.Infrastructure/Storages/WindowsNetworkShare) |
   
-## Message Broker Providers
+## Messaging Providers
   | Message Broker  | Status | Encryption | Health Check | Path |
   | --------------- | :----: | :--------: | :----------: | ---- |
-  | Amazon Event Bridge | ✅ | | ✅ | [/MessageBrokers/AmazonEventBridge](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AmazonEventBridge) |
-  | Amazon Kinesis | ✅ | | ✅ | [/MessageBrokers/AmazonKinesis](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AmazonKinesis) |
-  | Amazon SNS | ✅ | | ✅ | [/MessageBrokers/AmazonSNS](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AmazonSNS) |
-  | Amazon SQS | ✅ | | ✅ | [/MessageBrokers/AmazonSQS](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AmazonSQS) |
-  | Apache ActiveMQ | ✅ | | ✅ | [/MessageBrokers/ApacheActiveMQ](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/ApacheActiveMQ) |
-  | Azure Event Grid | ✅ | | ✅ | [/MessageBrokers/AzureEventGrid](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AzureEventGrid) |
-  | Azure Event Hub | ✅ | | ✅ | [/MessageBrokers/AzureEventHub](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AzureEventHub) |
-  | Azure Queue Storage| ✅ | | ✅ | [/MessageBrokers/AzureQueue](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AzureQueue) |
-  | Azure Service Bus | ✅ | | ✅ | [/MessageBrokers/AzureServiceBus](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/AzureServiceBus) |
-  | Google Cloud Pub/Sub | ✅ | | ✅ | [/MessageBrokers/GooglePubSub](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/GooglePubSub) |
-  | Kafka | ✅ | | ✅ | [/MessageBrokers/Kafka](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/Kafka) |
-  | RabbitMQ | ✅ | ✅ | ✅ | [/MessageBrokers/RabbitMQ](/src/DddDotNet/DddDotNet.Infrastructure/MessageBrokers/RabbitMQ) |
+  | Amazon Event Bridge | ✅ | | ✅ | [/Messaging/AmazonEventBridge](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AmazonEventBridge) |
+  | Amazon Kinesis | ✅ | | ✅ | [/Messaging/AmazonKinesis](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AmazonKinesis) |
+  | Amazon SNS | ✅ | | ✅ | [/Messaging/AmazonSNS](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AmazonSNS) |
+  | Amazon SQS | ✅ | | ✅ | [/Messaging/AmazonSQS](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AmazonSQS) |
+  | Apache ActiveMQ | ✅ | | ✅ | [/Messaging/ApacheActiveMQ](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/ApacheActiveMQ) |
+  | Azure Event Grid | ✅ | | ✅ | [/Messaging/AzureEventGrid](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureEventGrid) |
+  | Azure Event Hub | ✅ | | ✅ | [/Messaging/AzureEventHub](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureEventHub) |
+  | Azure Queue Storage| ✅ | | ✅ | [/Messaging/AzureQueue](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureQueue) |
+  | Azure Service Bus | ✅ | | ✅ | [/Messaging/AzureServiceBus](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureServiceBus) |
+  | Google Cloud Pub/Sub | ✅ | | ✅ | [/Messaging/GooglePubSub](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/GooglePubSub) |
+  | Kafka | ✅ | | ✅ | [/Messaging/Kafka](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/Kafka) |
+  | RabbitMQ | ✅ | ✅ | ✅ | [/Messaging/RabbitMQ](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/RabbitMQ) |
 
 ## Email Providers
   | Email  | Status | Health Check | Path |

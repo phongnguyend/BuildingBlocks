@@ -37,10 +37,10 @@ public class AwsSystemsManagerConfigurationProviderTests
     public Task Test()
     {
         var storageProvider = _config["Storage:Provider"];
-        var messageBokerProvider = _config["MessageBroker:Provider"];
+        var messageBokerProvider = _config["Messaging:Provider"];
 
         _testOutputHelper.WriteLine($"Storage:Provider {storageProvider}");
-        _testOutputHelper.WriteLine($"MessageBroker:Provider {messageBokerProvider}");
+        _testOutputHelper.WriteLine($"Messaging:Provider {messageBokerProvider}");
 
         return Task.CompletedTask;
     }
