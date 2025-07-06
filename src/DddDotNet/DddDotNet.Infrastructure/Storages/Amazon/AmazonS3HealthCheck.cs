@@ -1,5 +1,4 @@
-﻿using Amazon;
-using Amazon.S3;
+﻿using Amazon.S3;
 using Amazon.S3.Transfer;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -17,15 +16,15 @@ public class AmazonS3HealthCheck : IHealthCheck
 
     public AmazonS3HealthCheck(AmazonOptions options)
     {
-        _client = new AmazonS3Client(options.AccessKeyID, options.SecretAccessKey, RegionEndpoint.GetBySystemName(options.RegionEndpoint));
+        _client = options.CreateAmazonS3Client();
         _options = options;
     }
 
-    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default(CancellationToken))
+    public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var fileName = _options.Path + $"HealthCheck/{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}-{Guid.NewGuid()}.txt";
+            var fileName = _options.Path + $"HealthCheck/{DateTime.Now:yyyy-MM-dd-hh-mm-ss}-{Guid.NewGuid()}.txt";
             var fileTransferUtility = new TransferUtility(_client);
 
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes($"HealthCheck {DateTime.Now}"));
