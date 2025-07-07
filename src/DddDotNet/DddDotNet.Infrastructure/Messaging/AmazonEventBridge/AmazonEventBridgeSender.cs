@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.EventBridge;
-using Amazon.EventBridge.Model;
+﻿using Amazon.EventBridge.Model;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System.Collections.Generic;
 using System.Threading;
@@ -19,7 +17,7 @@ public class AmazonEventBridgeSender<T> : IMessageSender<T>
 
     public async Task SendAsync(T message, MetaData metaData = null, CancellationToken cancellationToken = default)
     {
-        var eventBridgeClient = new AmazonEventBridgeClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var eventBridgeClient = _options.CreateAmazonEventBridgeClient();
 
         var putEventsReponse = await eventBridgeClient.PutEventsAsync(new PutEventsRequest
         {

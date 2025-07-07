@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.Kinesis;
-using Amazon.Kinesis.Model;
+﻿using Amazon.Kinesis.Model;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
 using System.IO;
@@ -20,7 +18,7 @@ public class AmazonKinesisSender<T> : IMessageSender<T>
 
     public async Task SendAsync(T message, MetaData metaData = null, CancellationToken cancellationToken = default)
     {
-        var kinesisClient = new AmazonKinesisClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var kinesisClient = _options.CreateAmazonKinesisClient();
 
         var putRecordReponse = await kinesisClient.PutRecordAsync(new PutRecordRequest
         {

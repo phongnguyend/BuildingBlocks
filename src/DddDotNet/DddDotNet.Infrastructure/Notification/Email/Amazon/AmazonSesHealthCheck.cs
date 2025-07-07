@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SimpleEmail;
-using Amazon.SimpleEmail.Model;
+﻿using Amazon.SimpleEmail.Model;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Linq;
@@ -23,7 +21,7 @@ public class AmazonSesHealthCheck : IHealthCheck
     {
         try
         {
-            var client = new AmazonSimpleEmailServiceClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+            var client = _options.CreateAmazonSimpleEmailServiceClient();
 
             var sendRequest = new SendEmailRequest
             {

@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SimpleNotificationService;
-using DddDotNet.Domain.Infrastructure.Messaging;
+﻿using DddDotNet.Domain.Infrastructure.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +15,7 @@ public class AmazonSnsSender<T> : IMessageSender<T>
 
     public async Task SendAsync(T message, MetaData metaData = null, CancellationToken cancellationToken = default)
     {
-        var snsClient = new AmazonSimpleNotificationServiceClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var snsClient = _options.CreateAmazonSimpleNotificationServiceClient();
 
         var publishResponse = await snsClient.PublishAsync(_options.TopicARN, new Message<T>
         {

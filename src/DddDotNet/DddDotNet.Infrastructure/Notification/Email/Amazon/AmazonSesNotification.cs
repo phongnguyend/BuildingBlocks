@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SimpleEmail;
-using Amazon.SimpleEmail.Model;
+﻿using Amazon.SimpleEmail.Model;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -19,7 +17,7 @@ public class AmazonSesNotification : IEmailNotification
 
     public async Task SendAsync(IEmailMessage emailMessage, CancellationToken cancellationToken = default)
     {
-        var client = new AmazonSimpleEmailServiceClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var client = _options.CreateAmazonSimpleEmailServiceClient();
 
         var sendRequest = new SendEmailRequest
         {

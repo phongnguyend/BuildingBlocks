@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SQS;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -22,7 +20,7 @@ public class AmazonSqsHealthCheck : IHealthCheck
     {
         try
         {
-            var sqsClient = new AmazonSQSClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+            var sqsClient = _options.CreateAmazonSQSClient();
             var attributes = await sqsClient.GetQueueAttributesAsync(_options.QueueUrl, new List<string> { "All" }, cancellationToken);
 
             if (attributes?.HttpStatusCode == HttpStatusCode.OK)

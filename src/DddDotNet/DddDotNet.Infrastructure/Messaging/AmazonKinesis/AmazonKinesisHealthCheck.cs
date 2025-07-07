@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.Kinesis;
-using Amazon.Kinesis.Model;
+﻿using Amazon.Kinesis.Model;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Net;
@@ -22,7 +20,7 @@ public class AmazonKinesisHealthCheck : IHealthCheck
     {
         try
         {
-            var kinesisClient = new AmazonKinesisClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+            var kinesisClient = _options.CreateAmazonKinesisClient();
             var shardsResponse = await kinesisClient.ListShardsAsync(new ListShardsRequest { StreamName = _options.StreamName });
 
             if (shardsResponse?.HttpStatusCode == HttpStatusCode.OK)

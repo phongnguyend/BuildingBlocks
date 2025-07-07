@@ -1,7 +1,5 @@
-﻿using Amazon;
-using Amazon.CognitoIdentityProvider;
+﻿using Amazon.CognitoIdentityProvider;
 using Amazon.CognitoIdentityProvider.Model;
-using Amazon.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +15,7 @@ public class AwsCognitoIdentityProvider : IUserProvider
     public AwsCognitoIdentityProvider(AwsCognitoIdentityOptions options)
     {
         _options = options;
-
-        _client = new AmazonCognitoIdentityProviderClient(new BasicAWSCredentials(_options.AccessKeyID, _options.SecretAccessKey),
-            RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        _client = _options.CreateAmazonCognitoIdentityProviderClient();
     }
 
     public async Task CreateUserAsync(IUser user)

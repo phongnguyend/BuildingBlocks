@@ -1,4 +1,6 @@
-﻿namespace DddDotNet.Infrastructure.Messaging.AmazonEventBridge;
+﻿using Amazon.EventBridge;
+
+namespace DddDotNet.Infrastructure.Messaging.AmazonEventBridge;
 
 public class AmazonEventBridgeOptions
 {
@@ -11,4 +13,16 @@ public class AmazonEventBridgeOptions
     public string EndpointName { get; set; }
 
     public string RegionEndpoint { get; set; }
+
+    public AmazonEventBridgeClient CreateAmazonEventBridgeClient()
+    {
+        var regionEndpoint = global::Amazon.RegionEndpoint.GetBySystemName(RegionEndpoint);
+
+        if (!string.IsNullOrWhiteSpace(AccessKeyID))
+        {
+            return new AmazonEventBridgeClient(AccessKeyID, SecretAccessKey, regionEndpoint);
+        }
+
+        return new AmazonEventBridgeClient(regionEndpoint);
+    }
 }

@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.EventBridge;
-using Amazon.EventBridge.Model;
+﻿using Amazon.EventBridge.Model;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Net;
@@ -22,7 +20,7 @@ public class AmazonEventBridgeHealthCheck : IHealthCheck
     {
         try
         {
-            var eventBridgeClient = new AmazonEventBridgeClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+            var eventBridgeClient = _options.CreateAmazonEventBridgeClient();
             var endpointResponse = await eventBridgeClient.DescribeEndpointAsync(new DescribeEndpointRequest { HomeRegion = _options.RegionEndpoint, Name = _options.EndpointName }, cancellationToken);
 
             if (endpointResponse?.HttpStatusCode == HttpStatusCode.OK)

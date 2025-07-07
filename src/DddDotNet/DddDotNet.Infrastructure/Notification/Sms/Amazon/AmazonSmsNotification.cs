@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SimpleNotificationService;
-using Amazon.SimpleNotificationService.Model;
+﻿using Amazon.SimpleNotificationService.Model;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +15,7 @@ public class AmazonSmsNotification : ISmsNotification
 
     public async Task SendAsync(ISmsMessage smsMessage, CancellationToken cancellationToken = default)
     {
-        var snsClient = new AmazonSimpleNotificationServiceClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var snsClient = _options.CreateAmazonSimpleNotificationServiceClient();
 
         var publishResponse = await snsClient.PublishAsync(new PublishRequest
         {

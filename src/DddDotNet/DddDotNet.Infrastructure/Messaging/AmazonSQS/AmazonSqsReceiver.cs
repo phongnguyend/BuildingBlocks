@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SQS;
-using DddDotNet.Domain.Infrastructure.Messaging;
+﻿using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -28,7 +26,7 @@ public class AmazonSqsReceiver<T> : IMessageReceiver<T>
 
     private async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken)
     {
-        var sqsClient = new AmazonSQSClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var sqsClient = _options.CreateAmazonSQSClient();
 
         while (!cancellationToken.IsCancellationRequested)
         {

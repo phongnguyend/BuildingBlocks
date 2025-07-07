@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SimpleNotificationService;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Net;
 using System.Threading;
@@ -21,7 +19,7 @@ public class AmazonSnsHealthCheck : IHealthCheck
     {
         try
         {
-            var snsClient = new AmazonSimpleNotificationServiceClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+            var snsClient = _options.CreateAmazonSimpleNotificationServiceClient();
             var attributes = await snsClient.GetTopicAttributesAsync(_options.TopicARN, cancellationToken);
             if (attributes?.HttpStatusCode == HttpStatusCode.OK)
             {

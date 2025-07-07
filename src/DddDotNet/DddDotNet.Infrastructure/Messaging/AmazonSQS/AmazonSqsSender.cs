@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.SQS;
-using DddDotNet.Domain.Infrastructure.Messaging;
+﻿using DddDotNet.Domain.Infrastructure.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -17,7 +15,7 @@ public class AmazonSqsSender<T> : IMessageSender<T>
 
     public async Task SendAsync(T message, MetaData metaData = null, CancellationToken cancellationToken = default)
     {
-        var sqsClient = new AmazonSQSClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        var sqsClient = _options.CreateAmazonSQSClient();
 
         var responseSendMsg = await sqsClient.SendMessageAsync(_options.QueueUrl, new Message<T>
         {
