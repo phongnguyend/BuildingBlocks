@@ -1,7 +1,6 @@
-﻿using DddDotNet.CrossCuttingConcerns.Uris;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 
-namespace DddDotNet.CrossCuttingConcerns.UnitTests;
+namespace UriHelper.Tests;
 
 public class UriPathTests
 {

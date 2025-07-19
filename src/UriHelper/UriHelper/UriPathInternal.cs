@@ -1,8 +1,6 @@
-﻿using DddDotNet.CrossCuttingConcerns.ObjectPools;
-using System;
-using System.Text;
+﻿using System.Text;
 
-namespace DddDotNet.CrossCuttingConcerns.Uris;
+namespace UriHelper;
 
 public class UriPathInternal
 {

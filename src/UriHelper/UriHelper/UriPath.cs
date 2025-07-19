@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DddDotNet.CrossCuttingConcerns.Uris;
+﻿namespace UriHelper;
 
 public static class UriPath
 {

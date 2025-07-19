@@ -1,7 +1,6 @@
 ﻿using BenchmarkDotNet.Attributes;
-using DddDotNet.CrossCuttingConcerns.Uris;
 
-namespace DddDotNet.CrossCuttingConcerns.Benchmarks;
+namespace UriHelper.Benchmarks;
 
 [MemoryDiagnoser]
 public class UriPathBenchmarks
