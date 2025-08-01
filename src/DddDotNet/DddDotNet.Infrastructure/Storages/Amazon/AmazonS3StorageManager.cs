@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Amazon;
 
@@ -21,7 +22,7 @@ public class AmazonS3StorageManager : IFileStorageManager
 
     private string GetKey(IFileEntry fileEntry)
     {
-        return _options.Path + fileEntry.FileLocation;
+        return UriPath.Combine(_options.Path, fileEntry.FileLocation);
     }
 
     public async Task CreateAsync(IFileEntry fileEntry, Stream stream, CancellationToken cancellationToken = default)

@@ -6,6 +6,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Amazon;
 
@@ -24,7 +25,7 @@ public class AmazonS3HealthCheck : IHealthCheck
     {
         try
         {
-            var fileName = _options.Path + $"HealthCheck/{DateTime.Now:yyyy-MM-dd-hh-mm-ss}-{Guid.NewGuid()}.txt";
+            var fileName = UriPath.Combine(_options.Path, $"HealthCheck/{DateTime.Now:yyyy-MM-dd-hh-mm-ss}-{Guid.NewGuid()}.txt");
             var fileTransferUtility = new TransferUtility(_client);
 
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes($"HealthCheck {DateTime.Now}"));

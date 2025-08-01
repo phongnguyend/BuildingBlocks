@@ -6,6 +6,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using UriHelper;
 using Xunit;
 
 namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
@@ -31,7 +32,7 @@ public class AmazonS3StorageManagerTests
 
         var fileEntry = new FileEntry
         {
-            FileLocation = DateTime.Now.ToString("yyyy/MM/dd") + "/" + Guid.NewGuid()
+            FileLocation = UriPath.Combine(DateTime.Now.ToString("yyyy/MM/dd"), Guid.NewGuid().ToString())
         };
 
         var fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test"));
