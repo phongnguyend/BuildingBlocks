@@ -8,28 +8,28 @@ namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
 public class AzureServiceBusQueueHealthCheck : IHealthCheck
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
+    private readonly AzureServiceBusQueueOptions _options;
 
-    public AzureServiceBusQueueHealthCheck(string connectionString, string queueName)
+    public AzureServiceBusQueueHealthCheck(AzureServiceBusQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
+        _options = options;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var client = new ServiceBusAdministrationClient(_connectionString);
-            var queue = await client.GetQueueAsync(_queueName);
+            var client = !string.IsNullOrWhiteSpace(_options.ConnectionString)
+                ? new ServiceBusAdministrationClient(_options.ConnectionString)
+                : new ServiceBusAdministrationClient(_options.Namespace, new Azure.Identity.DefaultAzureCredential());
+            var queue = await client.GetQueueAsync(_options.QueueName, cancellationToken);
 
-            if (string.Equals(queue?.Value?.Name, _queueName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(queue?.Value?.Name, _options.QueueName, StringComparison.OrdinalIgnoreCase))
             {
                 return HealthCheckResult.Healthy();
             }
 
-            return new HealthCheckResult(context.Registration.FailureStatus, description: $"Queue: '{_queueName}' doesn't exist");
+            return new HealthCheckResult(context.Registration.FailureStatus, description: $"Queue: '{_options.QueueName}' doesn't exist");
         }
         catch (Exception ex)
         {

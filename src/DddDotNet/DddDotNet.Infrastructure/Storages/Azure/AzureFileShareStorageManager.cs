@@ -14,8 +14,7 @@ public class AzureFileShareStorageManager : IFileStorageManager
     public AzureFileShareStorageManager(AzureFileShareOptions options)
     {
         _options = options;
-
-        _shareClient = new ShareClient(_options.ConnectionString, _options.ShareName);
+        _shareClient = _options.CreateShareClient();
     }
 
     public Task ArchiveAsync(IFileEntry fileEntry, CancellationToken cancellationToken = default)

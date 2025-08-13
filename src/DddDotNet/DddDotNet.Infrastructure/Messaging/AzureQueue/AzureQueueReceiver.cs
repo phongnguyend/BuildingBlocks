@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Queues;
-using DddDotNet.Domain.Infrastructure.Messaging;
+﻿using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
 using System.Text.Json;
 using System.Threading;
@@ -9,15 +8,11 @@ namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
 
 public class AzureQueueReceiver<T> : IMessageReceiver<T>
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
-    private readonly QueueMessageEncoding _messageEncoding;
+    private readonly AzureQueueOptions _options;
 
-    public AzureQueueReceiver(string connectionString, string queueName, QueueMessageEncoding messageEncoding = QueueMessageEncoding.None)
+    public AzureQueueReceiver(AzureQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
-        _messageEncoding = messageEncoding;
+        _options = options;
     }
 
     public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
@@ -31,11 +26,7 @@ public class AzureQueueReceiver<T> : IMessageReceiver<T>
 
     public async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken = default)
     {
-        var queueClient = new QueueClient(_connectionString, _queueName, new QueueClientOptions
-        {
-            MessageEncoding = _messageEncoding,
-        });
-
+        var queueClient = _options.CreateQueueClient();
         await queueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 
         while (!cancellationToken.IsCancellationRequested)

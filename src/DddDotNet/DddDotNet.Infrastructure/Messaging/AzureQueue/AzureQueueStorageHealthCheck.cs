@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Queues;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+﻿using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,24 +7,22 @@ namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
 
 public class AzureQueueStorageHealthCheck : IHealthCheck
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
+    private readonly AzureQueueOptions _options;
 
-    public AzureQueueStorageHealthCheck(string connectionString, string queueName)
+    public AzureQueueStorageHealthCheck(AzureQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
+        _options = options;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var queueClient = new QueueClient(_connectionString, _queueName);
+            var queueClient = _options.CreateQueueClient();
 
             if (!await queueClient.ExistsAsync(cancellationToken))
             {
-                return new HealthCheckResult(context.Registration.FailureStatus, description: $"Queue '{_queueName}' not exists");
+                return new HealthCheckResult(context.Registration.FailureStatus, description: $"Queue '{_options.QueueName}' not exists");
             }
 
             await queueClient.GetPropertiesAsync(cancellationToken);

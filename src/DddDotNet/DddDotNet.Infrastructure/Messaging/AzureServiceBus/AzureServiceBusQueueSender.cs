@@ -7,19 +7,17 @@ namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
 public class AzureServiceBusQueueSender<T> : IMessageSender<T>
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
+    private readonly AzureServiceBusQueueOptions _options;
 
-    public AzureServiceBusQueueSender(string connectionString, string queueName)
+    public AzureServiceBusQueueSender(AzureServiceBusQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
+        _options = options;
     }
 
     public async Task SendAsync(T message, MetaData metaData, CancellationToken cancellationToken = default)
     {
-        await using var client = new ServiceBusClient(_connectionString);
-        ServiceBusSender sender = client.CreateSender(_queueName);
+        await using var client = _options.CreateServiceBusClient();
+        ServiceBusSender sender = client.CreateSender(_options.QueueName);
         var serviceBusMessage = new ServiceBusMessage(new Message<T>
         {
             Data = message,

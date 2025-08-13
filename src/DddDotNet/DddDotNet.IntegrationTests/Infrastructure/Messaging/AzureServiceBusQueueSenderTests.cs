@@ -29,7 +29,12 @@ public class AzureServiceBusQueueSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AzureServiceBusQueueSender<Message>(_connectionString, "integration-test");
+            var queueOptions = new AzureServiceBusQueueOptions
+            {
+                ConnectionString = _connectionString,
+                QueueName = "integration-test"
+            };
+            var sender = new AzureServiceBusQueueSender<Message>(queueOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -37,9 +42,12 @@ public class AzureServiceBusQueueSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AzureServiceBusQueueHealthCheck(
-            connectionString: _connectionString,
-            queueName: "integration-test");
+        var queueOptions = new AzureServiceBusQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = "integration-test"
+        };
+        var healthCheck = new AzureServiceBusQueueHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -47,9 +55,12 @@ public class AzureServiceBusQueueSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var healthCheck = new AzureServiceBusQueueHealthCheck(
-            connectionString: _connectionString,
-            queueName: Guid.NewGuid().ToString());
+        var queueOptions = new AzureServiceBusQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = Guid.NewGuid().ToString()
+        };
+        var healthCheck = new AzureServiceBusQueueHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

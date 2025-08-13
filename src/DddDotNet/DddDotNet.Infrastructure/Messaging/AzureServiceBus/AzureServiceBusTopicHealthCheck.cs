@@ -1,9 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,28 +8,28 @@ namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
 public class AzureServiceBusTopicHealthCheck : IHealthCheck
 {
-    private readonly string _connectionString;
-    private readonly string _topicName;
+    private readonly AzureServiceBusTopicOptions _options;
 
-    public AzureServiceBusTopicHealthCheck(string connectionString, string topicName)
+    public AzureServiceBusTopicHealthCheck(AzureServiceBusTopicOptions options)
     {
-        _connectionString = connectionString;
-        _topicName = topicName;
+        _options = options;
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var client = new ServiceBusAdministrationClient(_connectionString);
-            var topic = await client.GetTopicAsync(_topicName);
+            var client = !string.IsNullOrWhiteSpace(_options.ConnectionString)
+                ? new ServiceBusAdministrationClient(_options.ConnectionString)
+                : new ServiceBusAdministrationClient(_options.Namespace, new Azure.Identity.DefaultAzureCredential());
+            var topic = await client.GetTopicAsync(_options.Topic, cancellationToken);
 
-            if (string.Equals(topic?.Value?.Name, _topicName, StringComparison.OrdinalIgnoreCase))
+            if (string.Equals(topic?.Value?.Name, _options.Topic, StringComparison.OrdinalIgnoreCase))
             {
                 return HealthCheckResult.Healthy();
             }
 
-            return new HealthCheckResult(context.Registration.FailureStatus, description: $"Topic: '{_topicName}' doesn't exist");
+            return new HealthCheckResult(context.Registration.FailureStatus, description: $"Topic: '{_options.Topic}' doesn't exist");
         }
         catch (Exception ex)
         {

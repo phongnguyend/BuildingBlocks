@@ -7,19 +7,17 @@ namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
 public class AzureServiceBusTopicSender<T> : IMessageSender<T>
 {
-    private readonly string _connectionString;
-    private readonly string _topicName;
+    private readonly AzureServiceBusTopicOptions _options;
 
-    public AzureServiceBusTopicSender(string connectionString, string topicName)
+    public AzureServiceBusTopicSender(AzureServiceBusTopicOptions options)
     {
-        _connectionString = connectionString;
-        _topicName = topicName;
+        _options = options;
     }
 
     public async Task SendAsync(T message, MetaData metaData, CancellationToken cancellationToken = default)
     {
-        await using var client = new ServiceBusClient(_connectionString);
-        ServiceBusSender sender = client.CreateSender(_topicName);
+        await using var client = _options.CreateServiceBusClient();
+        ServiceBusSender sender = client.CreateSender(_options.Topic);
         var serviceBusMessage = new ServiceBusMessage(new Message<T>
         {
             Data = message,

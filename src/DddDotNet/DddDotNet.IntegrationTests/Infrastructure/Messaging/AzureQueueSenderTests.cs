@@ -29,7 +29,12 @@ public class AzureQueueSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AzureQueueSender<Message>(_connectionString, "integration-test");
+            var queueOptions = new AzureQueueOptions
+            {
+                ConnectionString = _connectionString,
+                QueueName = "integration-test"
+            };
+            var sender = new AzureQueueSender<Message>(queueOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -37,9 +42,12 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AzureQueueStorageHealthCheck(
-            connectionString: _connectionString,
-            queueName: "integration-test");
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = "integration-test"
+        };
+        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -47,9 +55,12 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var healthCheck = new AzureQueueStorageHealthCheck(
-            connectionString: _connectionString,
-            queueName: Guid.NewGuid().ToString());
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = Guid.NewGuid().ToString()
+        };
+        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

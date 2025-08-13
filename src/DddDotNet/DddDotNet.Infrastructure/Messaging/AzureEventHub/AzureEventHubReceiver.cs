@@ -1,7 +1,5 @@
-﻿using Azure.Messaging.EventHubs;
-using Azure.Messaging.EventHubs.Consumer;
+﻿using Azure.Messaging.EventHubs.Consumer;
 using Azure.Messaging.EventHubs.Processor;
-using Azure.Storage.Blobs;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
 using System.Text;
@@ -13,17 +11,11 @@ namespace DddDotNet.Infrastructure.Messaging.AzureEventHub;
 
 public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
 {
-    private readonly string _eventHubConnectionString;
-    private readonly string _eventHubName;
-    private readonly string _storageConnectionString;
-    private readonly string _storageContainerName;
+    private readonly AzureEventHubOptions _options;
 
-    public AzureEventHubReceiver(string eventHubConnectionString, string eventHubName, string storageConnectionString, string storageContainerName)
+    public AzureEventHubReceiver(AzureEventHubOptions options)
     {
-        _eventHubConnectionString = eventHubConnectionString;
-        _eventHubName = eventHubName;
-        _storageConnectionString = storageConnectionString;
-        _storageContainerName = storageContainerName;
+        _options = options;
     }
 
     public void Dispose()
@@ -32,8 +24,6 @@ public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
 
     public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
     {
-        var storageClient = new BlobContainerClient(_storageConnectionString, _storageContainerName);
-
         async Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
             try
@@ -62,12 +52,7 @@ public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
             return Task.CompletedTask;
         }
 
-        var processor = new EventProcessorClient(
-            storageClient,
-            EventHubConsumerClient.DefaultConsumerGroupName,
-            _eventHubConnectionString,
-            _eventHubName);
-
+        var processor = _options.CreateEventProcessorClient(EventHubConsumerClient.DefaultConsumerGroupName);
         processor.ProcessEventAsync += ProcessEventHandler;
         processor.ProcessErrorAsync += ProcessErrorHandler;
         await processor.StartProcessingAsync(cancellationToken);

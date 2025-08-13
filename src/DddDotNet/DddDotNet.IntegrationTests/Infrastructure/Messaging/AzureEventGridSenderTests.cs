@@ -38,7 +38,13 @@ public class AzureEventGridSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AzureEventGridSender<Message>(_domainEndpoint, _domainKey, "integration-test");
+            var gridOptions = new AzureEventGridOptions
+            {
+                DomainEndpoint = _domainEndpoint,
+                DomainKey = _domainKey,
+                Topic = "integration-test"
+            };
+            var sender = new AzureEventGridSender<Message>(gridOptions);
             await sender.SendAsync(message, metaData);
         }
     }

@@ -101,8 +101,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureQueueStorage(
         this IHealthChecksBuilder builder,
-        string connectionString,
-        string queueName,
+        AzureQueueOptions options,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -110,9 +109,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureQueueStorageHealthCheck(
-                connectionString: connectionString,
-                queueName: queueName),
+            new AzureQueueStorageHealthCheck(options),
             failureStatus,
             tags,
             timeout));
@@ -120,8 +117,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureServiceBusQueue(
         this IHealthChecksBuilder builder,
-        string connectionString,
-        string queueName,
+        AzureServiceBusQueueOptions options,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -129,9 +125,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureServiceBusQueueHealthCheck(
-                connectionString: connectionString,
-                queueName: queueName),
+            new AzureServiceBusQueueHealthCheck(options),
             failureStatus,
             tags,
             timeout));
@@ -139,8 +133,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureServiceBusTopic(
         this IHealthChecksBuilder builder,
-        string connectionString,
-        string topicName,
+        AzureServiceBusTopicOptions options,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -148,9 +141,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureServiceBusTopicHealthCheck(
-                connectionString: connectionString,
-                topicName: topicName),
+            new AzureServiceBusTopicHealthCheck(options),
             failureStatus,
             tags,
             timeout));
@@ -158,9 +149,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureServiceBusSubscription(
         this IHealthChecksBuilder builder,
-        string connectionString,
-        string topicName,
-        string subscriptionName,
+        AzureServiceBusSubscriptionOptions options,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -168,10 +157,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureServiceBusSubscriptionHealthCheck(
-                connectionString: connectionString,
-                topicName: topicName,
-                subscriptionName: subscriptionName),
+            new AzureServiceBusSubscriptionHealthCheck(options),
             failureStatus,
             tags,
             timeout));

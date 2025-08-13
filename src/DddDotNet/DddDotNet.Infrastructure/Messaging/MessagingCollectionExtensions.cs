@@ -13,62 +13,89 @@ namespace Microsoft.Extensions.DependencyInjection;
 
 public static class MessagingCollectionExtensions
 {
-    public static IServiceCollection AddAzureEventGridSender<T>(this IServiceCollection services, AzureEventGridOptions options)
+    public static IServiceCollection AddAzureEventGridSender<T>(this IServiceCollection services, AzureEventGridsOptions options)
     {
-        services.AddSingleton<IMessageSender<T>>(new AzureEventGridSender<T>(
-                            options.DomainEndpoint,
-                            options.DomainKey,
-                            options.Topics[typeof(T).Name]));
+        var gridOptions = new AzureEventGridOptions
+        {
+            DomainEndpoint = options.DomainEndpoint,
+            DomainKey = options.DomainKey,
+            Topic = options.Topics[typeof(T).Name]
+        };
+        services.AddSingleton<IMessageSender<T>>(new AzureEventGridSender<T>(gridOptions));
         return services;
     }
 
-    public static IServiceCollection AddAzureEventHubSender<T>(this IServiceCollection services, AzureEventHubOptions options)
+    public static IServiceCollection AddAzureEventHubSender<T>(this IServiceCollection services, AzureEventHubsOptions options)
     {
-        services.AddSingleton<IMessageSender<T>>(new AzureEventHubSender<T>(
-                            options.ConnectionString,
-                            options.Hubs[typeof(T).Name]));
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = options.ConnectionString,
+            HubName = options.Hubs[typeof(T).Name],
+            StorageConnectionString = options.StorageConnectionString,
+            StorageContainerName = options.StorageContainerNames != null && options.StorageContainerNames.ContainsKey(typeof(T).Name) ? options.StorageContainerNames[typeof(T).Name] : null
+        };
+        services.AddSingleton<IMessageSender<T>>(new AzureEventHubSender<T>(hubOptions));
         return services;
     }
 
-    public static IServiceCollection AddAzureEventHubReceiver<T>(this IServiceCollection services, AzureEventHubOptions options)
+    public static IServiceCollection AddAzureEventHubReceiver<T>(this IServiceCollection services, AzureEventHubsOptions options)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureEventHubReceiver<T>(
-                            options.ConnectionString,
-                            options.Hubs[typeof(T).Name],
-                            options.StorageConnectionString,
-                            options.StorageContainerNames[typeof(T).Name]));
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = options.ConnectionString,
+            HubName = options.Hubs[typeof(T).Name],
+            StorageConnectionString = options.StorageConnectionString,
+            StorageContainerName = options.StorageContainerNames != null && options.StorageContainerNames.ContainsKey(typeof(T).Name) ? options.StorageContainerNames[typeof(T).Name] : null
+        };
+        services.AddTransient<IMessageReceiver<T>>(x => new AzureEventHubReceiver<T>(hubOptions));
         return services;
     }
 
-    public static IServiceCollection AddAzureQueueSender<T>(this IServiceCollection services, AzureQueueOptions options)
+    public static IServiceCollection AddAzureQueueSender<T>(this IServiceCollection services, AzureQueuesOptions options)
     {
-        services.AddSingleton<IMessageSender<T>>(new AzureQueueSender<T>(
-                            options.ConnectionString,
-                            options.QueueNames[typeof(T).Name]));
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = options.ConnectionString,
+            QueueName = options.QueueNames[typeof(T).Name],
+            MessageEncoding = options.MessageEncoding
+        };
+        services.AddSingleton<IMessageSender<T>>(new AzureQueueSender<T>(queueOptions));
         return services;
     }
 
-    public static IServiceCollection AddAzureQueueReceiver<T>(this IServiceCollection services, AzureQueueOptions options)
+    public static IServiceCollection AddAzureQueueReceiver<T>(this IServiceCollection services, AzureQueuesOptions options)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureQueueReceiver<T>(
-                            options.ConnectionString,
-                            options.QueueNames[typeof(T).Name]));
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = options.ConnectionString,
+            QueueName = options.QueueNames[typeof(T).Name],
+            MessageEncoding = options.MessageEncoding
+        };
+        services.AddTransient<IMessageReceiver<T>>(x => new AzureQueueReceiver<T>(queueOptions));
         return services;
     }
 
     public static IServiceCollection AddAzureServiceBusQueueSender<T>(this IServiceCollection services, AzureServiceBusOptions options)
     {
-        services.AddSingleton<IMessageSender<T>>(new AzureServiceBusQueueSender<T>(
-                            options.ConnectionString,
-                            options.QueueNames[typeof(T).Name]));
+        var queueOptions = new AzureServiceBusQueueOptions
+        {
+            ConnectionString = options.ConnectionString,
+            Namespace = options.Namespace,
+            QueueName = options.QueueNames[typeof(T).Name]
+        };
+        services.AddSingleton<IMessageSender<T>>(new AzureServiceBusQueueSender<T>(queueOptions));
         return services;
     }
 
     public static IServiceCollection AddAzureServiceBusQueueReceiver<T>(this IServiceCollection services, AzureServiceBusOptions options)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureServiceBusQueueReceiver<T>(
-                            options.ConnectionString,
-                            options.QueueNames[typeof(T).Name]));
+        var queueOptions = new AzureServiceBusQueueOptions
+        {
+            ConnectionString = options.ConnectionString,
+            Namespace = options.Namespace,
+            QueueName = options.QueueNames[typeof(T).Name]
+        };
+        services.AddTransient<IMessageReceiver<T>>(x => new AzureServiceBusQueueReceiver<T>(queueOptions));
         return services;
     }
 
@@ -225,8 +252,14 @@ public static class MessagingCollectionExtensions
         {
             foreach (var queueName in options.AzureQueue.QueueNames)
             {
-                healthChecksBuilder.AddAzureQueueStorage(connectionString: options.AzureQueue.ConnectionString,
-                    queueName: queueName.Value,
+                var queueOptions = new AzureQueueOptions
+                {
+                    ConnectionString = options.AzureQueue.ConnectionString,
+                    QueueName = queueName.Value,
+                    MessageEncoding = options.AzureQueue.MessageEncoding
+                };
+                healthChecksBuilder.AddAzureQueueStorage(
+                    queueOptions,
                     name: $"Message Broker (Azure Queue) {queueName.Key}",
                     failureStatus: HealthStatus.Degraded);
             }
@@ -235,9 +268,14 @@ public static class MessagingCollectionExtensions
         {
             foreach (var queueName in options.AzureServiceBus.QueueNames)
             {
+                var queueOptions = new AzureServiceBusQueueOptions
+                {
+                    ConnectionString = options.AzureServiceBus.ConnectionString,
+                    Namespace = options.AzureServiceBus.Namespace,
+                    QueueName = queueName.Value
+                };
                 healthChecksBuilder.AddAzureServiceBusQueue(
-                    connectionString: options.AzureServiceBus.ConnectionString,
-                    queueName: queueName.Value,
+                    queueOptions,
                     name: $"Message Broker (Azure Service Bus) {queueName.Key}",
                     failureStatus: HealthStatus.Degraded);
             }

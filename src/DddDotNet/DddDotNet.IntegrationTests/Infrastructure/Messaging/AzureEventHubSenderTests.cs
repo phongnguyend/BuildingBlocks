@@ -28,7 +28,12 @@ public class AzureEventHubSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AzureEventHubSender<Message>(_connectionString, "integration-test");
+            var hubOptions = new AzureEventHubOptions
+            {
+                ConnectionString = _connectionString,
+                HubName = "integration-test"
+            };
+            var sender = new AzureEventHubSender<Message>(hubOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -36,9 +41,12 @@ public class AzureEventHubSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AzureEventHubHealthCheck(
-            connectionString: _connectionString,
-            hubName: "integration-test");
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = _connectionString,
+            HubName = "integration-test"
+        };
+        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,9 +54,12 @@ public class AzureEventHubSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var healthCheck = new AzureEventHubHealthCheck(
-            connectionString: _connectionString,
-            hubName: "integration-test-not-exist");
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = _connectionString,
+            HubName = "integration-test-not-exist"
+        };
+        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

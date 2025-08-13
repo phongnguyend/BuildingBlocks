@@ -70,49 +70,64 @@ class Program
             await Task.CompletedTask;
         });
 
-        var azureQueue = new AzureQueueReceiver<Message>(
-            config["Messaging:AzureQueue:ConnectionString"],
-            "integration-test");
+        var azureQueueOptions = new AzureQueueOptions
+        {
+            ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
+            QueueName = "integration-test"
+        };
+        var azureQueue = new AzureQueueReceiver<Message>(azureQueueOptions);
         _ = azureQueue.ReceiveAsync(async (message, metaData) =>
         {
             Console.WriteLine($"AzureQueue: {message}");
             await Task.CompletedTask;
         });
 
-        var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(
-            config["Messaging:AzureServiceBus:ConnectionString"],
-            "integration-test");
+        var azureServiceBusQueueOptions = new AzureServiceBusQueueOptions
+        {
+            ConnectionString = config["Messaging:AzureServiceBus:ConnectionString"],
+            QueueName = "integration-test"
+        };
+        var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(azureServiceBusQueueOptions);
         _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData) =>
         {
             Console.WriteLine($"AzureServiceBus: {message}");
             await Task.CompletedTask;
         });
 
-        var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(
-            config["Messaging:AzureServiceBus:ConnectionString"],
-            "topic-integration-test",
-            "sub-integration-test");
+        var azureServiceBusSubscriptionOptions = new AzureServiceBusSubscriptionOptions
+        {
+            ConnectionString = config["Messaging:AzureServiceBus:ConnectionString"],
+            Topic = "topic-integration-test",
+            Subscription = "sub-integration-test"
+        };
+        var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(azureServiceBusSubscriptionOptions);
         _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData) =>
         {
             Console.WriteLine($"AzureServiceBusSubscription: {message}");
             await Task.CompletedTask;
         });
 
-        var azureEventHub = new AzureEventHubReceiver<Message>(
-            config["Messaging:AzureEventHub:ConnectionString"],
-            "integration-test",
-            config["Messaging:AzureEventHub:StorageConnectionString"],
-            "eventhub-integration-test");
+        var azureEventHubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = config["Messaging:AzureEventHub:ConnectionString"],
+            HubName = "integration-test",
+            StorageConnectionString = config["Messaging:AzureEventHub:StorageConnectionString"],
+            StorageContainerName = "eventhub-integration-test"
+        };
+        var azureEventHub = new AzureEventHubReceiver<Message>(azureEventHubOptions);
         _ = azureEventHub.ReceiveAsync(async (message, metaData) =>
         {
             Console.WriteLine($"AzureEventHub: {message}");
             await Task.CompletedTask;
         });
 
-        var azureQueueEventGrid = new AzureQueueReceiver<EventGridEvent>(
-            config["Messaging:AzureQueue:ConnectionString"],
-            "event-grid-integration-test",
-            QueueMessageEncoding.Base64);
+        var azureQueueEventGridOptions = new AzureQueueOptions
+        {
+            ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
+            QueueName = "event-grid-integration-test",
+            MessageEncoding = QueueMessageEncoding.Base64
+        };
+        var azureQueueEventGrid = new AzureQueueReceiver<EventGridEvent>(azureQueueEventGridOptions);
         _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>
         {
             try

@@ -1,5 +1,4 @@
-﻿using Azure;
-using Azure.Messaging.EventGrid;
+﻿using Azure.Messaging.EventGrid;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
 using System.Collections.Generic;
@@ -10,20 +9,16 @@ namespace DddDotNet.Infrastructure.Messaging.AzureEventGrid;
 
 public class AzureEventGridSender<T> : IMessageSender<T>
 {
-    private readonly string _domainEndpoint;
-    private readonly string _domainKey;
-    private readonly string _topic;
+    private readonly AzureEventGridOptions _options;
 
-    public AzureEventGridSender(string domainEndpoint, string domainKey, string topic)
+    public AzureEventGridSender(AzureEventGridOptions options)
     {
-        _domainEndpoint = domainEndpoint;
-        _domainKey = domainKey;
-        _topic = topic;
+        _options = options;
     }
 
     public async Task SendAsync(T message, MetaData metaData, CancellationToken cancellationToken = default)
     {
-        EventGridPublisherClient client = new EventGridPublisherClient(new Uri(_domainEndpoint), new AzureKeyCredential(_domainKey));
+        var client = _options.CreateEventGridPublisherClient();
 
         var data = new BinaryData(new Message<T>
         {
@@ -37,7 +32,7 @@ public class AzureEventGridSender<T> : IMessageSender<T>
             {
                 Id = Guid.NewGuid().ToString(),
                 EventType = typeof(T).FullName,
-                Topic = _topic,
+                Topic = _options.Topic,
                 EventTime = DateTime.UtcNow,
                 Subject = "TEST",
                 DataVersion = "1.0",

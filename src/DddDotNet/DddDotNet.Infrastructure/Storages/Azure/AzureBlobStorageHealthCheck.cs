@@ -16,7 +16,7 @@ public class AzureBlobStorageHealthCheck : IHealthCheck
     public AzureBlobStorageHealthCheck(AzureBlobOption option)
     {
         _option = option;
-        _container = new BlobContainerClient(_option.ConnectionString, _option.Container);
+        _container = _option.CreateBlobContainerClient();
     }
 
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default(CancellationToken))

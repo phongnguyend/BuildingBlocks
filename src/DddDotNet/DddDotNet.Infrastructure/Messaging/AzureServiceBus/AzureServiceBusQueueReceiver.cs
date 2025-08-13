@@ -10,13 +10,11 @@ namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
 public class AzureServiceBusQueueReceiver<T> : IMessageReceiver<T>
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
+    private readonly AzureServiceBusQueueOptions _options;
 
-    public AzureServiceBusQueueReceiver(string connectionString, string queueName)
+    public AzureServiceBusQueueReceiver(AzureServiceBusQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
+        _options = options;
     }
 
     public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
@@ -30,8 +28,8 @@ public class AzureServiceBusQueueReceiver<T> : IMessageReceiver<T>
 
     private async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken)
     {
-        await using var client = new ServiceBusClient(_connectionString);
-        ServiceBusReceiver receiver = client.CreateReceiver(_queueName);
+        await using var client = _options.CreateServiceBusClient();
+        ServiceBusReceiver receiver = client.CreateReceiver(_options.QueueName);
 
         while (!cancellationToken.IsCancellationRequested)
         {

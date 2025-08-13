@@ -1,5 +1,4 @@
-﻿using Azure.Storage.Queues;
-using DddDotNet.Domain.Infrastructure.Messaging;
+﻿using DddDotNet.Domain.Infrastructure.Messaging;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -7,23 +6,16 @@ namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
 
 public class AzureQueueSender<T> : IMessageSender<T>
 {
-    private readonly string _connectionString;
-    private readonly string _queueName;
-    private readonly QueueMessageEncoding _messageEncoding;
+    private readonly AzureQueueOptions _options;
 
-    public AzureQueueSender(string connectionString, string queueName, QueueMessageEncoding messageEncoding = QueueMessageEncoding.None)
+    public AzureQueueSender(AzureQueueOptions options)
     {
-        _connectionString = connectionString;
-        _queueName = queueName;
-        _messageEncoding = messageEncoding;
+        _options = options;
     }
 
     public async Task SendAsync(T message, MetaData metaData, CancellationToken cancellationToken = default)
     {
-        var queueClient = new QueueClient(_connectionString, _queueName, new QueueClientOptions
-        {
-            MessageEncoding = _messageEncoding,
-        });
+        var queueClient = _options.CreateQueueClient();
 
         await queueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
 

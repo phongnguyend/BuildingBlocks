@@ -29,7 +29,12 @@ public class AzureServiceBusTopicSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AzureServiceBusTopicSender<Message>(_connectionString, "topic-integration-test");
+            var topicOptions = new AzureServiceBusTopicOptions
+            {
+                ConnectionString = _connectionString,
+                Topic = "topic-integration-test"
+            };
+            var sender = new AzureServiceBusTopicSender<Message>(topicOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -37,9 +42,12 @@ public class AzureServiceBusTopicSenderTests
     [Fact]
     public async Task TopicHealthCheck_Healthy()
     {
-        var healthCheck = new AzureServiceBusTopicHealthCheck(
-            connectionString: _connectionString,
-            topicName: "topic-integration-test");
+        var topicOptions = new AzureServiceBusTopicOptions
+        {
+            ConnectionString = _connectionString,
+            Topic = "topic-integration-test"
+        };
+        var healthCheck = new AzureServiceBusTopicHealthCheck(topicOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -47,9 +55,12 @@ public class AzureServiceBusTopicSenderTests
     [Fact]
     public async Task TopicHealthCheck_Degraded()
     {
-        var healthCheck = new AzureServiceBusTopicHealthCheck(
-            connectionString: _connectionString,
-            topicName: Guid.NewGuid().ToString());
+        var topicOptions = new AzureServiceBusTopicOptions
+        {
+            ConnectionString = _connectionString,
+            Topic = Guid.NewGuid().ToString()
+        };
+        var healthCheck = new AzureServiceBusTopicHealthCheck(topicOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }
@@ -57,10 +68,13 @@ public class AzureServiceBusTopicSenderTests
     [Fact]
     public async Task SubscriptionHealthCheck_Healthy()
     {
-        var healthCheck = new AzureServiceBusSubscriptionHealthCheck(
-            connectionString: _connectionString,
-            topicName: "topic-integration-test",
-            subscriptionName: "sub-integration-test");
+        var subscriptionOptions = new AzureServiceBusSubscriptionOptions
+        {
+            ConnectionString = _connectionString,
+            Topic = "topic-integration-test",
+            Subscription = "sub-integration-test"
+        };
+        var healthCheck = new AzureServiceBusSubscriptionHealthCheck(subscriptionOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -68,10 +82,13 @@ public class AzureServiceBusTopicSenderTests
     [Fact]
     public async Task SubscriptionHealthCheck_Degraded()
     {
-        var healthCheck = new AzureServiceBusSubscriptionHealthCheck(
-            connectionString: _connectionString,
-            topicName: "topic-integration-test",
-            subscriptionName: Guid.NewGuid().ToString());
+        var subscriptionOptions = new AzureServiceBusSubscriptionOptions
+        {
+            ConnectionString = _connectionString,
+            Topic = "topic-integration-test",
+            Subscription = Guid.NewGuid().ToString()
+        };
+        var healthCheck = new AzureServiceBusSubscriptionHealthCheck(subscriptionOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

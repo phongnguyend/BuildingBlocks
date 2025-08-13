@@ -15,13 +15,13 @@ public class MessagingOptions
 
     public KafkaOptions Kafka { get; set; }
 
-    public AzureQueueOptions AzureQueue { get; set; }
+    public AzureQueuesOptions AzureQueue { get; set; }
 
     public AzureServiceBusOptions AzureServiceBus { get; set; }
 
-    public AzureEventGridOptions AzureEventGrid { get; set; }
+    public AzureEventGridsOptions AzureEventGrid { get; set; }
 
-    public AzureEventHubOptions AzureEventHub { get; set; }
+    public AzureEventHubsOptions AzureEventHub { get; set; }
 
     public bool UsedRabbitMQ()
     {

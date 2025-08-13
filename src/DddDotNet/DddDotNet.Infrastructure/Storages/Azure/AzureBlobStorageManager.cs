@@ -14,7 +14,7 @@ public class AzureBlobStorageManager : IFileStorageManager
     public AzureBlobStorageManager(AzureBlobOption option)
     {
         _option = option;
-        _container = new BlobContainerClient(_option.ConnectionString, _option.Container);
+        _container = _option.CreateBlobContainerClient();
     }
 
     private string GetBlobName(IFileEntry fileEntry)
