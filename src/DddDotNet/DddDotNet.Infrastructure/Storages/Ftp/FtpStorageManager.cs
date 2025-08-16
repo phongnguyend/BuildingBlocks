@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Ftp;
 
@@ -43,7 +44,7 @@ public class FtpStorageManager : IFileStorageManager
 
     private string GetRemoteFilePath(IFileEntry fileEntry)
     {
-        return _options.Path + fileEntry.FileLocation;
+        return UriPath.Combine(_options.Path, fileEntry.FileLocation);
     }
 
     public async Task DeleteAsync(IFileEntry fileEntry, CancellationToken cancellationToken = default)

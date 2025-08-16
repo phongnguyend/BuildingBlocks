@@ -2,6 +2,7 @@
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Sftp;
 
@@ -44,7 +45,7 @@ public class SftpStorageManager : IFileStorageManager
 
     private string GetRemoteFilePath(IFileEntry fileEntry)
     {
-        return _options.Path + fileEntry.FileLocation;
+        return UriPath.Combine(_options.Path, fileEntry.FileLocation);
     }
 
     private static void CreateDirectories(SftpClient sftpClient, string path)

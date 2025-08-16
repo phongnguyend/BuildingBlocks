@@ -5,6 +5,7 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Sftp;
 
@@ -17,11 +18,11 @@ public class SftpStorageHealthCheck : IHealthCheck
         _options = options;
     }
 
-    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default(CancellationToken))
+    public Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            var fileName = _options.Path + $"HealthCheck_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}_{Guid.NewGuid()}.txt";
+            var fileName = UriPath.Combine(_options.Path, $"HealthCheck_{DateTime.Now.ToString("yyyy-MM-dd-hh-mm-ss")}_{Guid.NewGuid()}.txt");
 
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes($"HealthCheck{DateTime.Now}"));
             using var sftpClient = GetSftpClient();

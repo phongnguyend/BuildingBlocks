@@ -3,6 +3,7 @@ using Azure.Storage.Files.Shares;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Azure;
 
@@ -33,7 +34,7 @@ public class AzureFileShareStorageManager : IFileStorageManager
     private async Task<ShareFileClient> GetShareFileClientAsync(IFileEntry fileEntry, bool createDirectories, CancellationToken cancellationToken)
     {
         var fileName = Path.GetFileName(fileEntry.FileLocation);
-        string[] arrayPath = (_options.Path + fileEntry.FileLocation).Split('/');
+        string[] arrayPath = UriPath.Combine(_options.Path, fileEntry.FileLocation).Split('/');
         var directory = _shareClient.GetRootDirectoryClient();
 
         for (int i = 0; i < arrayPath.Length - 1; i++)

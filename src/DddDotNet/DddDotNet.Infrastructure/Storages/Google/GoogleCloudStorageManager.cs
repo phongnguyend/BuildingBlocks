@@ -3,6 +3,7 @@ using Google.Cloud.Storage.V1;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 using Object = Google.Apis.Storage.v1.Data.Object;
 
 namespace DddDotNet.Infrastructure.Storages.Google;
@@ -27,7 +28,7 @@ public class GoogleCloudStorageManager : IFileStorageManager
 
     private string GetObjectName(IFileEntry fileEntry)
     {
-        return _options.Path + fileEntry.FileLocation;
+        return UriPath.Combine(_options.Path, fileEntry.FileLocation);
     }
 
     public async Task ArchiveAsync(IFileEntry fileEntry, CancellationToken cancellationToken = default)

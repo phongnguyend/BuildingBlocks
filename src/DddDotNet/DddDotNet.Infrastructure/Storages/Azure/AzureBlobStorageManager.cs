@@ -3,6 +3,7 @@ using Azure.Storage.Blobs.Models;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Azure;
 
@@ -19,7 +20,7 @@ public class AzureBlobStorageManager : IFileStorageManager
 
     private string GetBlobName(IFileEntry fileEntry)
     {
-        return _option.Path + fileEntry.FileLocation;
+        return UriPath.Combine(_option.Path, fileEntry.FileLocation);
     }
 
     public async Task CreateAsync(IFileEntry fileEntry, Stream stream, CancellationToken cancellationToken = default)

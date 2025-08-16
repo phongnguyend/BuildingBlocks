@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using UriHelper;
 
 namespace DddDotNet.Infrastructure.Storages.Smb;
 
@@ -49,6 +50,11 @@ public class SmbFileShareStorageManager : IFileStorageManager
         return Task.CompletedTask;
     }
 
+    private string GetRemoteFilePath(IFileEntry fileEntry)
+    {
+        return UriPath.Combine(_options.Path, fileEntry.FileLocation);
+    }
+
     public Task CreateAsync(IFileEntry fileEntry, Stream stream, CancellationToken cancellationToken = default)
     {
         Init();
@@ -59,7 +65,7 @@ public class SmbFileShareStorageManager : IFileStorageManager
 
         CreateDirectory(fileEntry);
 
-        status = _fileStore.CreateFile(out fileHandle, out fileStatus, _options.Path + fileEntry.FileLocation, AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_OVERWRITE_IF, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+        status = _fileStore.CreateFile(out fileHandle, out fileStatus, GetRemoteFilePath(fileEntry), AccessMask.GENERIC_WRITE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_OVERWRITE_IF, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
 
         if (status != NTStatus.STATUS_SUCCESS)
         {
@@ -103,7 +109,7 @@ public class SmbFileShareStorageManager : IFileStorageManager
         object fileHandle;
         FileStatus fileStatus;
 
-        var directory = Path.GetDirectoryName(_options.Path + fileEntry.FileLocation).Replace("\\", "/");
+        var directory = Path.GetDirectoryName(GetRemoteFilePath(fileEntry)).Replace("\\", "/");
 
         if (string.IsNullOrEmpty(directory))
         {
@@ -141,7 +147,7 @@ public class SmbFileShareStorageManager : IFileStorageManager
         object fileHandle;
         FileStatus fileStatus;
 
-        status = _fileStore.CreateFile(out fileHandle, out fileStatus, _options.Path + fileEntry.FileLocation, AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+        status = _fileStore.CreateFile(out fileHandle, out fileStatus, GetRemoteFilePath(fileEntry), AccessMask.GENERIC_WRITE | AccessMask.DELETE | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.None, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
 
         if (status != NTStatus.STATUS_SUCCESS)
         {
@@ -190,7 +196,7 @@ public class SmbFileShareStorageManager : IFileStorageManager
         object fileHandle;
         FileStatus fileStatus;
 
-        status = _fileStore.CreateFile(out fileHandle, out fileStatus, _options.Path + fileEntry.FileLocation, AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
+        status = _fileStore.CreateFile(out fileHandle, out fileStatus, GetRemoteFilePath(fileEntry), AccessMask.GENERIC_READ | AccessMask.SYNCHRONIZE, SMBLibrary.FileAttributes.Normal, ShareAccess.Read, CreateDisposition.FILE_OPEN, CreateOptions.FILE_NON_DIRECTORY_FILE | CreateOptions.FILE_SYNCHRONOUS_IO_ALERT, null);
 
         if (status != NTStatus.STATUS_SUCCESS)
         {
