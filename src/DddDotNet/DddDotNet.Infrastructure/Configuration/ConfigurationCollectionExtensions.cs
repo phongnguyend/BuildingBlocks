@@ -1,8 +1,6 @@
 ﻿using Amazon;
 using Amazon.Runtime;
-using Azure.Extensions.AspNetCore.Configuration.Secrets;
 using Azure.Identity;
-using Azure.Security.KeyVault.Secrets;
 using Microsoft.Extensions.Configuration;
 using System;
 
@@ -19,13 +17,22 @@ public static class ConfigurationCollectionExtensions
 
         if (options?.AzureAppConfiguration?.IsEnabled ?? false)
         {
-            configurationBuilder.AddAzureAppConfiguration(options.AzureAppConfiguration.ConnectionString);
+            if (!string.IsNullOrEmpty(options.AzureAppConfiguration.ConnectionString))
+            {
+                configurationBuilder.AddAzureAppConfiguration(options.AzureAppConfiguration.ConnectionString);
+            }
+            else
+            {
+                configurationBuilder.AddAzureAppConfiguration(opt =>
+                {
+                    opt.Connect(new Uri(options.AzureAppConfiguration.Endpoint), new DefaultAzureCredential());
+                });
+            }
         }
 
         if (options?.AzureKeyVault?.IsEnabled ?? false)
         {
-            var secretClient = new SecretClient(new Uri(options.AzureKeyVault.VaultName), new DefaultAzureCredential());
-            configurationBuilder.AddAzureKeyVault(secretClient, new KeyVaultSecretManager());
+            configurationBuilder.AddAzureKeyVault(new Uri(options.AzureKeyVault.VaultUri), new DefaultAzureCredential());
         }
 
         if (options?.HashiCorpVault?.IsEnabled ?? false)

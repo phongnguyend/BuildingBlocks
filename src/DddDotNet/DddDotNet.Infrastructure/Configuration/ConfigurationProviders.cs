@@ -15,7 +15,7 @@ public class AzureKeyVaultOptions
 {
     public bool IsEnabled { get; set; }
 
-    public string VaultName { get; set; }
+    public string VaultUri { get; set; }
 }
 
 public class AzureAppConfigurationOptions
@@ -23,6 +23,8 @@ public class AzureAppConfigurationOptions
     public bool IsEnabled { get; set; }
 
     public string ConnectionString { get; set; }
+
+    public string Endpoint { get; set; }
 }
 
 public class AwsSystemsManagerOptions
