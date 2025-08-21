@@ -42,6 +42,7 @@
   | Amazon SES | ✅ | ✅ | [/Notification/Email/Amazon](/src/DddDotNet/DddDotNet.Infrastructure/Notification/Email/Amazon) |
   | SendGrid | ✅ | ✅ | [/Notification/Email/SendGrid](/src/DddDotNet/DddDotNet.Infrastructure/Notification/Email/SendGrid) |
   | SMTP | ✅ | ✅ | [/Notification/Email/Smtp](/src/DddDotNet/DddDotNet.Infrastructure/Notification/Email/Smtp) |
+  | MailKit | ✅ | ✅ | [/Notification/Email/MailKit](/src/DddDotNet/DddDotNet.Infrastructure/Notification/Email/MailKit) |
 
 ## SMS Providers
   | SMS  | Status | Health Check | Path |
