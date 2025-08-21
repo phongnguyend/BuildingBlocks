@@ -1,6 +1,4 @@
-﻿using Amazon;
-using Amazon.Runtime;
-using Azure.Identity;
+﻿using Azure.Identity;
 using Microsoft.Extensions.Configuration;
 using System;
 
@@ -45,11 +43,7 @@ public static class ConfigurationCollectionExtensions
 
     public static IConfigurationBuilder AddAwsSystemsManager(this IConfigurationBuilder configurationBuilder, AwsSystemsManagerOptions options)
     {
-        configurationBuilder.AddSystemsManager(options.ParameterPath, new Amazon.Extensions.NETCore.Setup.AWSOptions
-        {
-            Credentials = new BasicAWSCredentials(options.AccessKeyID, options.SecretAccessKey),
-            Region = RegionEndpoint.GetBySystemName(options.RegionEndpoint)
-        });
+        configurationBuilder.AddSystemsManager(options.ParameterPath, options.CreateAWSOptions());
 
         return configurationBuilder;
     }

@@ -1,5 +1,4 @@
-﻿using Amazon;
-using Amazon.SecretsManager;
+﻿using Amazon.SecretsManager;
 using Amazon.SecretsManager.Model;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -25,7 +24,7 @@ internal class AwsSecretsManagerConfigurationProvider : ConfigurationProvider
             SecretId = _options.SecretName
         };
 
-        using var client = new AmazonSecretsManagerClient(_options.AccessKeyID, _options.SecretAccessKey, RegionEndpoint.GetBySystemName(_options.RegionEndpoint));
+        using var client = _options.CreateAmazonSecretsManagerClient();
         var response = client.GetSecretValueAsync(request).Result;
 
         string secretString;
@@ -58,6 +57,18 @@ public class AwsSecretsManagerOptions
     public string SecretName { get; set; }
 
     public string RegionEndpoint { get; set; }
+
+    public AmazonSecretsManagerClient CreateAmazonSecretsManagerClient()
+    {
+        var regionEndpoint = global::Amazon.RegionEndpoint.GetBySystemName(RegionEndpoint);
+
+        if (!string.IsNullOrWhiteSpace(AccessKeyID))
+        {
+            return new AmazonSecretsManagerClient(AccessKeyID, SecretAccessKey, regionEndpoint);
+        }
+
+        return new AmazonSecretsManagerClient(regionEndpoint);
+    }
 }
 
 public class AwsSecretsManagerConfigurationSource : IConfigurationSource

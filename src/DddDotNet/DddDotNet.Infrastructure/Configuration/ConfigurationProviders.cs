@@ -1,4 +1,7 @@
-﻿namespace DddDotNet.Infrastructure.Configuration;
+﻿using Amazon.Extensions.NETCore.Setup;
+using Amazon.Runtime;
+
+namespace DddDotNet.Infrastructure.Configuration;
 
 public class ConfigurationProviders
 {
@@ -36,4 +39,21 @@ public class AwsSystemsManagerOptions
     public string ParameterPath { get; set; }
 
     public string RegionEndpoint { get; set; }
+
+    public AWSOptions CreateAWSOptions()
+    {
+        var regionEndpoint = global::Amazon.RegionEndpoint.GetBySystemName(RegionEndpoint);
+
+        var awsOptions = new AWSOptions
+        {
+            Region = regionEndpoint,
+        };
+
+        if (!string.IsNullOrWhiteSpace(AccessKeyID))
+        {
+            awsOptions.Credentials = new BasicAWSCredentials(AccessKeyID, SecretAccessKey);
+        }
+
+        return awsOptions;
+    }
 }
