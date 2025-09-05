@@ -17,6 +17,7 @@
   | Google Cloud Storage | ✅ | ✅ | [/Storages/Google](/src/DddDotNet/DddDotNet.Infrastructure/Storages/Google) |
   | Local | ✅ | ✅ | [/Storages/Local](/src/DddDotNet/DddDotNet.Infrastructure/Storages/Local) |
   | SFTP | ✅ | ✅ | [/Storages/Sftp](/src/DddDotNet/DddDotNet.Infrastructure/Storages/Sftp) |
+  | SharePointOnline | ✅ | ✅ | [/Storages/SharePointOnline](/src/DddDotNet/DddDotNet.Infrastructure/Storages/SharePointOnline) |
   | SMB | ✅ | | [/Storages/Smb](/src/DddDotNet/DddDotNet.Infrastructure/Storages/Smb) |
   | Win32 Network Share | ✅ | | [/Storages/WindowsNetworkShare](/src/DddDotNet/DddDotNet.Infrastructure/Storages/WindowsNetworkShare) |
   
