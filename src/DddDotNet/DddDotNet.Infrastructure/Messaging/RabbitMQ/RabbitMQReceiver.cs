@@ -65,23 +65,24 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
                 arguments["x-single-active-consumer"] = true;
             }
 
-            if (_options.DeadLetter != null)
+            arguments["x-dead-letter-exchange"] = string.Empty;
+
+            var deadLetterQueueName = _options.QueueName + "-dead-letters";
+
+            arguments["x-dead-letter-routing-key"] = deadLetterQueueName;
+
+            _channel.QueueDeclare(deadLetterQueueName, true, false, false, null);
+
+            for (int i = 0; i < _options.MaxRetryCount; i++)
             {
-                if (!string.IsNullOrEmpty(_options.DeadLetter.ExchangeName))
+                var queueName = _options.QueueName + "-retry-" + (i + 1);
+                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false,
+                arguments: new Dictionary<string, object>
                 {
-                    arguments["x-dead-letter-exchange"] = _options.DeadLetter.ExchangeName;
-                }
-
-                if (!string.IsNullOrEmpty(_options.DeadLetter.RoutingKey))
-                {
-                    arguments["x-dead-letter-routing-key"] = _options.DeadLetter.RoutingKey;
-                }
-
-                if (_options.DeadLetter.AutomaticCreateEnabled && !string.IsNullOrEmpty(_options.DeadLetter.QueueName))
-                {
-                    _channel.QueueDeclare(_options.DeadLetter.QueueName, true, false, false, null);
-                    _channel.QueueBind(_options.DeadLetter.QueueName, _options.DeadLetter.ExchangeName, _options.DeadLetter.RoutingKey, null);
-                }
+                    { "x-message-ttl", 5000 * (i + 1) },
+                    { "x-dead-letter-exchange", string.Empty },
+                    { "x-dead-letter-routing-key", _options.QueueName }
+                });
             }
 
             arguments = arguments.Count == 0 ? null : arguments;
@@ -126,9 +127,25 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
             }
             catch (Exception ex)
             {
-                // TODO: log here
-                await Task.Delay(1000);
-                _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: _options.RequeueOnFailure);
+                if (_options.MaxRetryCount > 0)
+                {
+                    int retryCount = GetRetryCount(ea.BasicProperties);
+
+                    var props = _channel.CreateBasicProperties();
+                    props.Persistent = true;
+                    props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
+                    props.Headers["x-retry"] = retryCount + 1;
+
+                    if (retryCount < _options.MaxRetryCount)
+                    {
+                        _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
+                        _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                    }
+                    else
+                    {
+                        _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                    }
+                }
             }
         };
 
@@ -143,5 +160,20 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
     {
         _channel?.Dispose();
         _connection?.Dispose();
+    }
+
+    private static int GetRetryCount(IBasicProperties props)
+    {
+        if (props?.Headers != null && props.Headers.TryGetValue("x-retry", out var val))
+        {
+            if (val is byte[] bytes)
+            {
+                return int.Parse(Encoding.UTF8.GetString(bytes));
+            }
+
+            return Convert.ToInt32(val);
+        }
+
+        return 0;
     }
 }
