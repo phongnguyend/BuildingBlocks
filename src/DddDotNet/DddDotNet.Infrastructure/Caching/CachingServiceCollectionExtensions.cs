@@ -1,4 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Caching;
+using Microsoft.Extensions.Caching.Cosmos;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -35,6 +36,16 @@ public static class CachingServiceCollectionExtensions
                 opt.ConnectionString = options.Distributed.SqlServer.ConnectionString;
                 opt.SchemaName = options.Distributed.SqlServer.SchemaName;
                 opt.TableName = options.Distributed.SqlServer.TableName;
+            });
+        }
+        else if (distributedProvider == "Cosmos")
+        {
+            services.AddCosmosCache((CosmosCacheOptions cacheOptions) =>
+            {
+                cacheOptions.ContainerName = options.Distributed.Cosmos.ContainerName;
+                cacheOptions.DatabaseName = options.Distributed.Cosmos.DatabaseName;
+                cacheOptions.ClientBuilder = options.Distributed.Cosmos.CreateCosmosClientBuilder();
+                cacheOptions.CreateIfNotExists = true;
             });
         }
 
