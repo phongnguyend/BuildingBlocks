@@ -157,7 +157,8 @@ class Program
             AutomaticCreateEnabled = true,
             QueueType = "quorum",
             //MessageEncryptionEnabled = true,
-            MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4="
+            MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4=",
+            DeadLetterEnabled = true,
         };
         config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
         var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions);

@@ -25,4 +25,6 @@ public class RabbitMQReceiverOptions
     public string MessageEncryptionKey { get; set; }
 
     public int MaxRetryCount { get; set; }
+
+    public bool DeadLetterEnabled { get; set; }
 }

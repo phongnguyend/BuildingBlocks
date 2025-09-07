@@ -65,13 +65,16 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
                 arguments["x-single-active-consumer"] = true;
             }
 
-            arguments["x-dead-letter-exchange"] = string.Empty;
+            if (_options.DeadLetterEnabled)
+            {
+                arguments["x-dead-letter-exchange"] = string.Empty;
 
-            var deadLetterQueueName = _options.QueueName + "-dead-letters";
+                var deadLetterQueueName = _options.QueueName + "-dead-letters";
 
-            arguments["x-dead-letter-routing-key"] = deadLetterQueueName;
+                arguments["x-dead-letter-routing-key"] = deadLetterQueueName;
 
-            _channel.QueueDeclare(deadLetterQueueName, true, false, false, null);
+                _channel.QueueDeclare(deadLetterQueueName, true, false, false, null);
+            }
 
             for (int i = 0; i < _options.MaxRetryCount; i++)
             {
@@ -125,27 +128,63 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 
                 _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
             }
-            catch (Exception ex)
+            catch (ConsumerException ex)
             {
-                if (_options.MaxRetryCount > 0)
+                if (ex.Retryable)
                 {
-                    int retryCount = GetRetryCount(ea.BasicProperties);
-
-                    var props = _channel.CreateBasicProperties();
-                    props.Persistent = true;
-                    props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
-                    props.Headers["x-retry"] = retryCount + 1;
-
-                    if (retryCount < _options.MaxRetryCount)
+                    if (_options.MaxRetryCount > 0)
                     {
-                        _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
-                        _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                        int retryCount = GetRetryCount(ea.BasicProperties);
+
+                        if (retryCount < _options.MaxRetryCount)
+                        {
+                            var props = _channel.CreateBasicProperties();
+                            props.Persistent = true;
+                            props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
+                            props.Headers["x-retry"] = retryCount + 1;
+
+                            _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
+                            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
+                        }
+                        else
+                        {
+                            if (_options.DeadLetterEnabled)
+                            {
+                                _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                            }
+                            else
+                            {
+                                // TODO: Log and Stop
+                            }
+                        }
                     }
                     else
                     {
-                        _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                        if (_options.DeadLetterEnabled)
+                        {
+                            _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                        }
+                        else
+                        {
+                            // TODO: Log and Stop
+                        }
                     }
                 }
+                else
+                {
+                    if (_options.DeadLetterEnabled)
+                    {
+                        _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                    }
+                    else
+                    {
+                        // TODO: Log and Stop
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // TODO: Log and Stop
             }
         };
 
