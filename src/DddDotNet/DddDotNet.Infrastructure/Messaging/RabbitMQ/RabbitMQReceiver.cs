@@ -16,26 +16,12 @@ namespace DddDotNet.Infrastructure.Messaging.RabbitMQ;
 public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 {
     private readonly RabbitMQReceiverOptions _options;
-    private readonly IConnection _connection;
+    private IConnection _connection;
     private IModel _channel;
-    private string _queueName;
 
     public RabbitMQReceiver(RabbitMQReceiverOptions options)
     {
         _options = options;
-
-        _connection = new ConnectionFactory
-        {
-            HostName = options.HostName,
-            UserName = options.UserName,
-            Password = options.Password,
-            AutomaticRecoveryEnabled = true,
-            DispatchConsumersAsync = true
-        }.CreateConnection();
-
-        _queueName = options.QueueName;
-
-        _connection.ConnectionShutdown += Connection_ConnectionShutdown;
     }
 
     private void Connection_ConnectionShutdown(object sender, ShutdownEventArgs e)
@@ -45,6 +31,17 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 
     public Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
     {
+        _connection = new ConnectionFactory
+        {
+            HostName = _options.HostName,
+            UserName = _options.UserName,
+            Password = _options.Password,
+            AutomaticRecoveryEnabled = true,
+            DispatchConsumersAsync = true
+        }.CreateConnection();
+
+        _connection.ConnectionShutdown += Connection_ConnectionShutdown;
+
         _channel = _connection.CreateModel();
 
         if (_options.AutomaticCreateEnabled)
@@ -188,7 +185,7 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
             }
         };
 
-        _channel.BasicConsume(queue: _queueName,
+        _channel.BasicConsume(queue: _options.QueueName,
                              autoAck: false,
                              consumer: consumer);
 
