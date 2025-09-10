@@ -125,58 +125,38 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 
                 _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
             }
-            catch (ConsumerException ex)
+            catch (ConsumerHandledException ex)
             {
-                if (ex.Retryable)
+                if (ex.NextAction == ConsumerHandledExceptionNextAction.Retry && _options.MaxRetryCount > 0)
                 {
-                    if (_options.MaxRetryCount > 0)
-                    {
-                        int retryCount = GetRetryCount(ea.BasicProperties);
+                    int retryCount = GetRetryCount(ea.BasicProperties);
 
-                        if (retryCount < _options.MaxRetryCount)
-                        {
-                            var props = _channel.CreateBasicProperties();
-                            props.Persistent = true;
-                            props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
-                            props.Headers["x-retry"] = retryCount + 1;
-
-                            _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
-                            _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
-                        }
-                        else
-                        {
-                            if (_options.DeadLetterEnabled)
-                            {
-                                _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
-                            }
-                            else
-                            {
-                                // TODO: Log and Stop
-                            }
-                        }
-                    }
-                    else
+                    if (retryCount < _options.MaxRetryCount)
                     {
-                        if (_options.DeadLetterEnabled)
-                        {
-                            _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
-                        }
-                        else
-                        {
-                            // TODO: Log and Stop
-                        }
+                        var props = _channel.CreateBasicProperties();
+                        props.Persistent = true;
+                        props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
+                        props.Headers["x-retry"] = retryCount + 1;
+
+                        _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
+                        _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                     }
-                }
-                else
-                {
-                    if (_options.DeadLetterEnabled)
+                    else if (_options.DeadLetterEnabled)
                     {
                         _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
                     }
-                    else
-                    {
-                        // TODO: Log and Stop
-                    }
+
+                    return;
+                }
+                else if (ex.NextAction == ConsumerHandledExceptionNextAction.ReQueue)
+                {
+                    _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: true);
+                    return;
+                }
+                else if (_options.DeadLetterEnabled)
+                {
+                    _channel.BasicNack(deliveryTag: ea.DeliveryTag, multiple: false, requeue: false);
+                    return;
                 }
             }
             catch (Exception ex)
