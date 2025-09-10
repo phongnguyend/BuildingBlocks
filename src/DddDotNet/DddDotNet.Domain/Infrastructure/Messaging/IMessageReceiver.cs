@@ -18,4 +18,5 @@ public enum ConsumerHandledExceptionNextAction
 {
     Retry,
     ReQueue,
+    DeadLetter,
 }
