@@ -96,6 +96,11 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
         var consumer = new AsyncEventingBasicConsumer(_channel);
         consumer.Received += async (model, ea) =>
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+
             try
             {
                 var bodyText = string.Empty;
