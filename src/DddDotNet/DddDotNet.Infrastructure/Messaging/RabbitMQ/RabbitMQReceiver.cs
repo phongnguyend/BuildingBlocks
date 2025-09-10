@@ -44,6 +44,8 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 
         _channel = _connection.CreateModel();
 
+        int[] retryQueues = [1, 3, 5, 8, 13, 21, 34];
+
         if (_options.AutomaticCreateEnabled)
         {
             var arguments = new Dictionary<string, object>();
@@ -73,16 +75,19 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
                 _channel.QueueDeclare(deadLetterQueueName, true, false, false, null);
             }
 
-            for (int i = 0; i < _options.MaxRetryCount; i++)
+            if (_options.MaxRetryCount > 0)
             {
-                var queueName = _options.QueueName + "-retry-" + (i + 1);
-                _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false,
-                arguments: new Dictionary<string, object>
+                foreach (var retryQueue in retryQueues)
                 {
-                    { "x-message-ttl", 5000 * (i + 1) },
+                    var queueName = _options.QueueName + "-retry-" + retryQueue;
+                    _channel.QueueDeclare(queueName, durable: true, exclusive: false, autoDelete: false,
+                    arguments: new Dictionary<string, object>
+                    {
+                    { "x-message-ttl", retryQueue * 10 * 1000 },
                     { "x-dead-letter-exchange", string.Empty },
                     { "x-dead-letter-routing-key", _options.QueueName }
-                });
+                    });
+                }
             }
 
             arguments = arguments.Count == 0 ? null : arguments;
@@ -145,7 +150,7 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
                             props.Headers = ea.BasicProperties.Headers ?? new Dictionary<string, object>();
                             props.Headers["x-retry"] = retryCount + 1;
 
-                            _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + (retryCount + 1), props, ea.Body.ToArray());
+                            _channel.BasicPublish(string.Empty, _options.QueueName + "-retry-" + GetRetryQueue(retryCount + 1, retryQueues), props, ea.Body.ToArray());
                             _channel.BasicAck(deliveryTag: ea.DeliveryTag, multiple: false);
                         }
                         else if (_options.DeadLetterEnabled)
@@ -207,5 +212,11 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
         }
 
         return 0;
+    }
+
+    private int GetRetryQueue(int retryCount, int[] buckets)
+    {
+        int index = (retryCount - 1) % buckets.Length;
+        return buckets[index];
     }
 }
