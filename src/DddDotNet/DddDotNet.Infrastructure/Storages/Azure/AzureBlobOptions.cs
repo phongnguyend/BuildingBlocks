@@ -4,9 +4,11 @@ using System;
 
 namespace DddDotNet.Infrastructure.Storages.Azure;
 
-public class AzureBlobOption
+public class AzureBlobOptions
 {
     public string ConnectionString { get; set; }
+
+    public string StorageAccountName { get; set; }
 
     public string Container { get; set; }
 
@@ -20,7 +22,7 @@ public class AzureBlobOption
         }
         else
         {
-            var containerUri = new Uri($"https://{Container}.blob.core.windows.net");
+            var containerUri = new Uri($"https://{StorageAccountName}.blob.core.windows.net/{Container}");
             return new BlobContainerClient(containerUri, new DefaultAzureCredential());
         }
     }

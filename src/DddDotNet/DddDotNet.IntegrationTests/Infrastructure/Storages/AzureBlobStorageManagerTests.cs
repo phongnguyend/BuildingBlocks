@@ -12,7 +12,7 @@ namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
 
 public class AzureBlobStorageManagerTests
 {
-    AzureBlobOption _options = new AzureBlobOption();
+    AzureBlobOptions _options = new AzureBlobOptions();
 
     public AzureBlobStorageManagerTests()
     {

@@ -69,7 +69,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureBlobStorage(
         this IHealthChecksBuilder builder,
-        AzureBlobOption azureBlobOptions,
+        AzureBlobOptions azureBlobOptions,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,

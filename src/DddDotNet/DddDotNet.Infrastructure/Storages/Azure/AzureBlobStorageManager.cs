@@ -9,10 +9,10 @@ namespace DddDotNet.Infrastructure.Storages.Azure;
 
 public class AzureBlobStorageManager : IFileStorageManager
 {
-    private readonly AzureBlobOption _option;
+    private readonly AzureBlobOptions _option;
     private readonly BlobContainerClient _container;
 
-    public AzureBlobStorageManager(AzureBlobOption option)
+    public AzureBlobStorageManager(AzureBlobOptions option)
     {
         _option = option;
         _container = _option.CreateBlobContainerClient();

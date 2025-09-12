@@ -16,7 +16,7 @@ public static class StoragesCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAzureBlobStorageManager(this IServiceCollection services, AzureBlobOption options)
+    public static IServiceCollection AddAzureBlobStorageManager(this IServiceCollection services, AzureBlobOptions options)
     {
         services.AddSingleton<IFileStorageManager>(new AzureBlobStorageManager(options));
 

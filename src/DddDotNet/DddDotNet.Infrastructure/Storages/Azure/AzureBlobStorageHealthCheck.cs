@@ -11,10 +11,10 @@ namespace DddDotNet.Infrastructure.Storages.Azure;
 
 public class AzureBlobStorageHealthCheck : IHealthCheck
 {
-    private readonly AzureBlobOption _option;
+    private readonly AzureBlobOptions _option;
     private readonly BlobContainerClient _container;
 
-    public AzureBlobStorageHealthCheck(AzureBlobOption option)
+    public AzureBlobStorageHealthCheck(AzureBlobOptions option)
     {
         _option = option;
         _container = _option.CreateBlobContainerClient();

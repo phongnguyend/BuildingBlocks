@@ -1,5 +1,5 @@
 ﻿using DddDotNet.CrossCuttingConcerns.Exceptions;
-using DddDotNet.Infrastructure.Logging;
+using DddDotNet.CrossCuttingConcerns.Logging;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;

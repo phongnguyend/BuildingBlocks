@@ -10,7 +10,7 @@ public class StorageOptions
 
     public LocalOptions Local { get; set; }
 
-    public AzureBlobOption Azure { get; set; }
+    public AzureBlobOptions Azure { get; set; }
 
     public AmazonOptions Amazon { get; set; }
 
