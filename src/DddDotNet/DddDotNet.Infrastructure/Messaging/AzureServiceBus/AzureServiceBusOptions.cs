@@ -19,16 +19,37 @@ public class AzureServiceBusNameSpaceOptions
 
     public string Namespace { get; set; }
 
+    public ServiceBusClientOptions ServiceBusClientOptions { get; set; }
+
     public ServiceBusClient CreateServiceBusClient()
     {
+        var options = GetServiceBusClientOptions();
+
         if (!string.IsNullOrWhiteSpace(ConnectionString))
         {
-            return new ServiceBusClient(ConnectionString);
+            return options == null ?
+                new ServiceBusClient(ConnectionString) :
+                new ServiceBusClient(ConnectionString, options);
         }
         else
         {
-            return new ServiceBusClient(Namespace, new DefaultAzureCredential());
+            return options == null ?
+                new ServiceBusClient(Namespace, new DefaultAzureCredential()) :
+                new ServiceBusClient(Namespace, new DefaultAzureCredential(), options);
         }
+    }
+
+    private ServiceBusClientOptions GetServiceBusClientOptions()
+    {
+        if (ServiceBusClientOptions is null)
+        {
+            return null;
+        }
+
+        return new ServiceBusClientOptions
+        {
+            TransportType = ServiceBusClientOptions.TransportType
+        };
     }
 }
 
