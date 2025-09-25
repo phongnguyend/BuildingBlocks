@@ -1,6 +1,5 @@
 ﻿using Azure.Identity;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.Cosmos.Fluent;
 using System;
 
 namespace DddDotNet.Infrastructure.Caching;
@@ -56,15 +55,23 @@ public class CosmosOptions
 
     public string ContainerName { get; set; }
 
+    public CosmosClientOptions CosmosClientOptions { get; set; }
+
     public CosmosClient CreateCosmosClient()
     {
+        var options = GetCosmosClientOptions();
+
         if (!string.IsNullOrWhiteSpace(ConnectionString))
         {
-            return new CosmosClient(ConnectionString);
+            return options == null ?
+                new CosmosClient(ConnectionString) :
+                new CosmosClient(ConnectionString, options);
         }
         else if (!string.IsNullOrWhiteSpace(AccountEndpoint))
         {
-            return new CosmosClient(AccountEndpoint, new DefaultAzureCredential());
+            return options == null ?
+                new CosmosClient(AccountEndpoint, new DefaultAzureCredential()) :
+                new CosmosClient(AccountEndpoint, new DefaultAzureCredential(), options);
         }
         else
         {
@@ -72,19 +79,16 @@ public class CosmosOptions
         }
     }
 
-    public CosmosClientBuilder CreateCosmosClientBuilder()
+    private CosmosClientOptions GetCosmosClientOptions()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
+        if (CosmosClientOptions == null)
         {
-            return new CosmosClientBuilder(ConnectionString);
+            return null;
         }
-        else if (!string.IsNullOrWhiteSpace(AccountEndpoint))
+
+        return new CosmosClientOptions
         {
-            return new CosmosClientBuilder(AccountEndpoint, new DefaultAzureCredential());
-        }
-        else
-        {
-            throw new InvalidOperationException("Either ConnectionString or AccountEndpoint must be provided.");
-        }
+            ConnectionMode = CosmosClientOptions.ConnectionMode,
+        };
     }
 }

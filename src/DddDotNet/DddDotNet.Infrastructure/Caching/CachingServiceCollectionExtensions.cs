@@ -44,7 +44,7 @@ public static class CachingServiceCollectionExtensions
             {
                 cacheOptions.ContainerName = options.Distributed.Cosmos.ContainerName;
                 cacheOptions.DatabaseName = options.Distributed.Cosmos.DatabaseName;
-                cacheOptions.ClientBuilder = options.Distributed.Cosmos.CreateCosmosClientBuilder();
+                cacheOptions.CosmosClient = options.Distributed.Cosmos.CreateCosmosClient();
                 cacheOptions.CreateIfNotExists = true;
             });
         }
