@@ -125,7 +125,10 @@ class Program
         {
             ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
             QueueName = "event-grid-integration-test",
-            MessageEncoding = QueueMessageEncoding.Base64
+            QueueClientOptions = new QueueClientOptions
+            {
+                MessageEncoding = QueueMessageEncoding.Base64
+            }
         };
         var azureQueueEventGrid = new AzureQueueReceiver<EventGridEvent>(azureQueueEventGridOptions);
         _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>

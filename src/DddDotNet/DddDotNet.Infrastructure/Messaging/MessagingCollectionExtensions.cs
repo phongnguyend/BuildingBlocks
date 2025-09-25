@@ -57,7 +57,7 @@ public static class MessagingCollectionExtensions
         {
             ConnectionString = options.ConnectionString,
             QueueName = options.QueueNames[typeof(T).Name],
-            MessageEncoding = options.MessageEncoding
+            QueueClientOptions = options.QueueClientOptions
         };
         services.AddSingleton<IMessageSender<T>>(new AzureQueueSender<T>(queueOptions));
         return services;
@@ -69,7 +69,7 @@ public static class MessagingCollectionExtensions
         {
             ConnectionString = options.ConnectionString,
             QueueName = options.QueueNames[typeof(T).Name],
-            MessageEncoding = options.MessageEncoding
+            QueueClientOptions = options.QueueClientOptions
         };
         services.AddTransient<IMessageReceiver<T>>(x => new AzureQueueReceiver<T>(queueOptions));
         return services;
@@ -256,7 +256,7 @@ public static class MessagingCollectionExtensions
                 {
                     ConnectionString = options.AzureQueue.ConnectionString,
                     QueueName = queueName.Value,
-                    MessageEncoding = options.AzureQueue.MessageEncoding
+                    QueueClientOptions = options.AzureQueue.QueueClientOptions
                 };
                 healthChecksBuilder.AddAzureQueueStorage(
                     queueOptions,

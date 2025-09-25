@@ -11,7 +11,7 @@ public class AzureQueuesOptions
 
     public Dictionary<string, string> QueueNames { get; set; }
 
-    public QueueMessageEncoding MessageEncoding { get; set; }
+    public QueueClientOptions QueueClientOptions { get; set; }
 }
 
 public class AzureQueueOptions
@@ -20,18 +20,37 @@ public class AzureQueueOptions
 
     public string QueueName { get; set; }
 
-    public QueueMessageEncoding MessageEncoding { get; set; } = QueueMessageEncoding.None;
+    public QueueClientOptions QueueClientOptions { get; set; }
 
     public QueueClient CreateQueueClient()
     {
+        var options = GetQueueClientOptions();
+
         if (!string.IsNullOrWhiteSpace(ConnectionString))
         {
-            return new QueueClient(ConnectionString, QueueName, new QueueClientOptions { MessageEncoding = MessageEncoding });
+            return options == null ?
+                new QueueClient(ConnectionString, QueueName) :
+                new QueueClient(ConnectionString, QueueName, options);
         }
         else
         {
             var queueUri = new Uri($"https://{QueueName}.queue.core.windows.net/{QueueName}");
-            return new QueueClient(queueUri, new DefaultAzureCredential(), new QueueClientOptions { MessageEncoding = MessageEncoding });
+            return options == null ?
+                new QueueClient(queueUri, new DefaultAzureCredential()) :
+                new QueueClient(queueUri, new DefaultAzureCredential(), options);
         }
+    }
+
+    private QueueClientOptions GetQueueClientOptions()
+    {
+        if (QueueClientOptions is null)
+        {
+            return null;
+        }
+
+        return new QueueClientOptions
+        {
+            MessageEncoding = QueueClientOptions.MessageEncoding
+        };
     }
 }
