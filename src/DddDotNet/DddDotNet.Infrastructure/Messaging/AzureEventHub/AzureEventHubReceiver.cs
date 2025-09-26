@@ -22,7 +22,7 @@ public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
     {
     }
 
-    public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
+    public async Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
         async Task ProcessEventHandler(ProcessEventArgs eventArgs)
         {
@@ -30,7 +30,7 @@ public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
             {
                 var messageAsString = Encoding.UTF8.GetString(eventArgs.Data.EventBody);
                 var message = JsonSerializer.Deserialize<Message<T>>(messageAsString);
-                await action(message.Data, message.MetaData);
+                await action(message.Data, message.MetaData, cancellationToken);
             }
             catch (Exception ex)
             {

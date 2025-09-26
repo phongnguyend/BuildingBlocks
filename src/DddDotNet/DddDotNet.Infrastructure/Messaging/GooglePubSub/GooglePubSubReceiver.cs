@@ -17,12 +17,12 @@ public class GooglePubSubReceiver<T> : IMessageReceiver<T>
         Environment.SetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS", _options.CredentialFilePath);
     }
 
-    public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
+    public async Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
         await ReceiveStringAsync(async retrievedMessage =>
         {
             var message = JsonSerializer.Deserialize<Message<T>>(retrievedMessage);
-            await action(message.Data, message.MetaData);
+            await action(message.Data, message.MetaData, cancellationToken);
         }, cancellationToken);
     }
 

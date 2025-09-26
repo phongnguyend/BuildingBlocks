@@ -1,5 +1,6 @@
 ﻿using Azure.Messaging.EventGrid;
 using Azure.Storage.Queues;
+using DddDotNet.Domain.Infrastructure.Messaging;
 using DddDotNet.Infrastructure.Messaging.AmazonSQS;
 using DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
 using DddDotNet.Infrastructure.Messaging.AzureEventHub;
@@ -55,7 +56,7 @@ class Program
         var amazonSqsOptions = new AmazonSqsOptions();
         config.GetSection("Messaging:AmazonSQS").Bind(amazonSqsOptions);
         var amazonSqs = new AmazonSqsReceiver<Message>(amazonSqsOptions);
-        _ = amazonSqs.ReceiveAsync(async (message, metaData) =>
+        _ = amazonSqs.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"AmazonSqs: {message}");
             await Task.CompletedTask;
@@ -64,7 +65,7 @@ class Program
         var apacheActiveMqOptions = new ApacheActiveMQOptions();
         config.GetSection("Messaging:ApacheActiveMQ").Bind(apacheActiveMqOptions);
         var apacheActiveMq = new ApacheActiveMQReceiver<Message>(apacheActiveMqOptions);
-        _ = apacheActiveMq.ReceiveAsync(async (message, metaData) =>
+        _ = apacheActiveMq.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"ApacheActiveMQ: {message}");
             await Task.CompletedTask;
@@ -76,7 +77,7 @@ class Program
             QueueName = "integration-test"
         };
         var azureQueue = new AzureQueueReceiver<Message>(azureQueueOptions);
-        _ = azureQueue.ReceiveAsync(async (message, metaData) =>
+        _ = azureQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"AzureQueue: {message}");
             await Task.CompletedTask;
@@ -88,7 +89,7 @@ class Program
             QueueName = "integration-test"
         };
         var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(azureServiceBusQueueOptions);
-        _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData) =>
+        _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"AzureServiceBus: {message}");
             await Task.CompletedTask;
@@ -101,7 +102,7 @@ class Program
             Subscription = "sub-integration-test"
         };
         var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(azureServiceBusSubscriptionOptions);
-        _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData) =>
+        _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"AzureServiceBusSubscription: {message}");
             await Task.CompletedTask;
@@ -115,7 +116,7 @@ class Program
             StorageContainerName = "eventhub-integration-test"
         };
         var azureEventHub = new AzureEventHubReceiver<Message>(azureEventHubOptions);
-        _ = azureEventHub.ReceiveAsync(async (message, metaData) =>
+        _ = azureEventHub.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"AzureEventHub: {message}");
             await Task.CompletedTask;
@@ -149,7 +150,7 @@ class Program
         var googlePubSubOptions = new GooglePubSubOptions();
         config.GetSection("Messaging:GooglePubSub").Bind(googlePubSubOptions);
         var googlePubSub = new GooglePubSubReceiver<Message>(googlePubSubOptions);
-        _ = googlePubSub.ReceiveAsync(async (message, metaData) =>
+        _ = googlePubSub.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"GooglePubSub: {message}");
             await Task.CompletedTask;
@@ -162,12 +163,15 @@ class Program
             //MessageEncryptionEnabled = true,
             MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4=",
             DeadLetterEnabled = true,
+            MaxRetryCount = 3,
+            RetryIntervals = [10, 30, 50, 80, 130, 210, 340]
         };
         config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
         var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions);
-        _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData) =>
+        _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"RabbitMQ: {message}");
+            //throw new ConsumerHandledException { NextAction = ConsumerHandledExceptionNextAction.Retry };
             await Task.CompletedTask;
         });
 
@@ -178,7 +182,7 @@ class Program
             GroupId = "integrationtest2",
             AutoCommitEnabled = false,
         });
-        _ = kafka.ReceiveAsync(async (message, metaData) =>
+        _ = kafka.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"Kafka: {message}");
             await Task.CompletedTask;

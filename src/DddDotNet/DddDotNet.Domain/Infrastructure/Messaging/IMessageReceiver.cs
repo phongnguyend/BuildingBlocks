@@ -6,7 +6,7 @@ namespace DddDotNet.Domain.Infrastructure.Messaging;
 
 public interface IMessageReceiver<T>
 {
-    Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default);
+    Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default);
 }
 
 public class ConsumerHandledException : Exception

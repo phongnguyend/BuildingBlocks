@@ -33,7 +33,7 @@ public class KafkaReceiver<T> : IMessageReceiver<T>, IDisposable
         _consumer.Dispose();
     }
 
-    public async Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
+    public async Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -47,7 +47,7 @@ public class KafkaReceiver<T> : IMessageReceiver<T>, IDisposable
                 }
 
                 var message = JsonSerializer.Deserialize<Message<T>>(consumeResult.Message.Value);
-                await action(message.Data, message.MetaData);
+                await action(message.Data, message.MetaData, cancellationToken);
 
                 if (_options.AutoCommitEnabled.HasValue && !_options.AutoCommitEnabled.Value)
                 {

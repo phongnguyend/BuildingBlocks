@@ -16,7 +16,7 @@ public class ApacheActiveMQReceiver<T> : IMessageReceiver<T>
         _options = options;
     }
 
-    public Task ReceiveAsync(Func<T, MetaData, Task> action, CancellationToken cancellationToken = default)
+    public Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
         Uri connecturi = new Uri(_options.Url);
         IConnectionFactory factory = new NMSConnectionFactory(connecturi);
@@ -52,7 +52,7 @@ public class ApacheActiveMQReceiver<T> : IMessageReceiver<T>
         consumer.Listener += (IMessage retrievedMessage) =>
         {
             var message = JsonSerializer.Deserialize<Message<T>>((retrievedMessage as ITextMessage).Text);
-            action(message.Data, message.MetaData).Wait();
+            action(message.Data, message.MetaData, cancellationToken).Wait();
             retrievedMessage.Acknowledge();
         };
 
