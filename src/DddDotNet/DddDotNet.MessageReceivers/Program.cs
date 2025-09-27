@@ -10,6 +10,8 @@ using DddDotNet.Infrastructure.Messaging.GooglePubSub;
 using DddDotNet.Infrastructure.Messaging.Kafka;
 using DddDotNet.Infrastructure.Messaging.RabbitMQ;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -48,6 +50,12 @@ class Program
 {
     static void Main(string[] args)
     {
+        // Set up dependency injection and logging
+        var services = new ServiceCollection();
+        services.AddLogging(configure => configure.AddConsole());
+        var serviceProvider = services.BuildServiceProvider();
+        var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+
         var config = new ConfigurationBuilder()
         .AddJsonFile("appsettings.json")
         .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
@@ -167,10 +175,12 @@ class Program
             RetryIntervals = [10, 30, 50, 80, 130, 210, 340]
         };
         config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
-        var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions);
+        var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Message>>();
+        var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions, logger);
         _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =>
         {
             Console.WriteLine($"RabbitMQ: {message}");
+            //throw new Exception("Test exception");
             //throw new ConsumerHandledException { NextAction = ConsumerHandledExceptionNextAction.Retry };
             await Task.CompletedTask;
         });

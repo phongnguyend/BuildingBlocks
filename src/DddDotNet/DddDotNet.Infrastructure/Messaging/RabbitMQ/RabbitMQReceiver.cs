@@ -1,6 +1,7 @@
 ﻿using CryptographyHelper;
 using CryptographyHelper.SymmetricAlgorithms;
 using DddDotNet.Domain.Infrastructure.Messaging;
+using Microsoft.Extensions.Logging;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using System;
@@ -16,12 +17,14 @@ namespace DddDotNet.Infrastructure.Messaging.RabbitMQ;
 public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
 {
     private readonly RabbitMQReceiverOptions _options;
+    private readonly ILogger<RabbitMQReceiver<T>> _logger;
     private IConnection _connection;
     private IModel _channel;
 
-    public RabbitMQReceiver(RabbitMQReceiverOptions options)
+    public RabbitMQReceiver(RabbitMQReceiverOptions options, ILogger<RabbitMQReceiver<T>> logger)
     {
         _options = options;
+        _logger = logger;
     }
 
     private void Connection_ConnectionShutdown(object sender, ShutdownEventArgs e)
@@ -180,7 +183,7 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
             }
             catch (Exception ex)
             {
-                // TODO: Log and Stop
+                _logger.LogError(ex, "Error processing message from RabbitMQ. Queue Name: {QueueName}", _options.QueueName);
             }
         };
 

@@ -8,6 +8,7 @@ using DddDotNet.Infrastructure.Messaging.Fake;
 using DddDotNet.Infrastructure.Messaging.Kafka;
 using DddDotNet.Infrastructure.Messaging.RabbitMQ;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -145,7 +146,7 @@ public static class MessagingCollectionExtensions
 
     public static IServiceCollection AddRabbitMQReceiver<T>(this IServiceCollection services, RabbitMQOptions options)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new RabbitMQReceiver<T>(new RabbitMQReceiverOptions
+        var receiverOptions = new RabbitMQReceiverOptions
         {
             HostName = options.HostName,
             UserName = options.UserName,
@@ -156,7 +157,8 @@ public static class MessagingCollectionExtensions
             AutomaticCreateEnabled = true,
             MessageEncryptionEnabled = options.MessageEncryptionEnabled,
             MessageEncryptionKey = options.MessageEncryptionKey
-        }));
+        };
+        services.AddTransient<IMessageReceiver<T>>(x => new RabbitMQReceiver<T>(receiverOptions, x.GetRequiredService<ILogger<RabbitMQReceiver<T>>>()));
         return services;
     }
 
