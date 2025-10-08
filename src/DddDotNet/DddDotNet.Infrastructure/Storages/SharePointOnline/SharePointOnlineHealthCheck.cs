@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Graph;
+using Microsoft.Graph.Drives.Item.Items.Item.Checkin;
 using Microsoft.Graph.Models;
 using System;
 using System.IO;
@@ -92,6 +93,17 @@ public class SharePointOnlineHealthCheck : IHealthCheck
                 .ItemWithPath(fileName)
                 .Content
                 .PutAsync(stream, cancellationToken: cancellationToken);
+
+            // Auto checkin the file if required
+            if (_options.CheckinRequired)
+            {
+                await _client.Drives[drive.Id].Root
+                    .ItemWithPath(fileName)
+                    .Checkin.PostAsync(new CheckinPostRequestBody
+                    {
+                        Comment = "Health check",
+                    }, cancellationToken: cancellationToken);
+            }
 
             // Delete test file
             await _client.Drives[drive.Id].Root

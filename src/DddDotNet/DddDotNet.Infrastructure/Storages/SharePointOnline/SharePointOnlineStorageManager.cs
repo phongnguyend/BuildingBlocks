@@ -1,6 +1,7 @@
 ﻿using DddDotNet.Infrastructure.Caching;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Graph;
+using Microsoft.Graph.Drives.Item.Items.Item.Checkin;
 using Microsoft.Graph.Models;
 using System;
 using System.IO;
@@ -86,6 +87,17 @@ public class SharePointOnlineStorageManager : IFileStorageManager
             .ItemWithPath(relativePath)
             .Content
             .PutAsync(stream, cancellationToken: cancellationToken);
+
+        // Auto checkin the file if required
+        if (_options.CheckinRequired)
+        {
+            await _client.Drives[drive.Id].Root
+                .ItemWithPath(relativePath)
+                .Checkin.PostAsync(new CheckinPostRequestBody
+                {
+                    Comment = "Checkin",
+                }, cancellationToken: cancellationToken);
+        }
     }
 
     public async Task DeleteAsync(IFileEntry fileEntry, CancellationToken cancellationToken = default)

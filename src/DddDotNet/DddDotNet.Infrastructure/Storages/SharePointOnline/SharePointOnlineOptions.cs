@@ -19,6 +19,8 @@ public class SharePointOnlineOptions
 
     public string Path { get; set; }
 
+    public bool CheckinRequired { get; set; }
+
     public GraphServiceClient CreateGraphServiceClient()
     {
         var options = new ClientSecretCredentialOptions
