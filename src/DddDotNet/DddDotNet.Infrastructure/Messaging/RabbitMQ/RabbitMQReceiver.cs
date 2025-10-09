@@ -111,12 +111,10 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
             {
                 var bodyText = string.Empty;
 
-                if (_options.MessageEncryptionEnabled)
+                if (IsEncrypted(ea.BasicProperties))
                 {
-                    var parts = Encoding.UTF8.GetString(ea.Body.Span).Split('.');
-
-                    var iv = parts[0].FromBase64String();
-                    var encryptedBytes = parts[1].FromBase64String();
+                    var iv = GetEncryptedIV(ea.BasicProperties).FromBase64String();
+                    var encryptedBytes = ea.Body.Span.ToArray();
 
                     bodyText = encryptedBytes.UseAES(_options.MessageEncryptionKey.FromBase64String())
                     .WithCipher(CipherMode.CBC)
@@ -213,6 +211,36 @@ public class RabbitMQReceiver<T> : IMessageReceiver<T>, IDisposable
         }
 
         return 0;
+    }
+
+    private static bool IsEncrypted(IBasicProperties props)
+    {
+        if (props?.Headers != null && props.Headers.TryGetValue("x-encrypted", out var val))
+        {
+            if (val is byte[] bytes)
+            {
+                return bool.Parse(Encoding.UTF8.GetString(bytes));
+            }
+
+            return Convert.ToBoolean(val);
+        }
+
+        return false;
+    }
+
+    private static string GetEncryptedIV(IBasicProperties props)
+    {
+        if (props?.Headers != null && props.Headers.TryGetValue("x-encrypted-iv", out var val))
+        {
+            if (val is byte[] bytes)
+            {
+                return Encoding.UTF8.GetString(bytes);
+            }
+
+            return val.ToString();
+        }
+
+        return null;
     }
 
     private int GetRetryQueue(int retryCount, int[] buckets)

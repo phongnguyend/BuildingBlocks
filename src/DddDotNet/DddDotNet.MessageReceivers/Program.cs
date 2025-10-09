@@ -168,7 +168,6 @@ class Program
         {
             AutomaticCreateEnabled = true,
             QueueType = "quorum",
-            //MessageEncryptionEnabled = true,
             MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4=",
             DeadLetterEnabled = true,
             MaxRetryCount = 3,

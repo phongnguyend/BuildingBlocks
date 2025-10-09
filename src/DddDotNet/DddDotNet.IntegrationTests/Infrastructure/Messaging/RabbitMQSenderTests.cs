@@ -23,13 +23,22 @@ public class RabbitMQSenderTests
 
         config.GetSection("Messaging:RabbitMQ").Bind(_rabbitMQSenderOptions);
 
-        //_rabbitMQSenderOptions.MessageEncryptionEnabled = true;
         _rabbitMQSenderOptions.MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4=";
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
+        _rabbitMQSenderOptions.MessageEncryptionEnabled = false;
+        for (int i = 0; i < 10; i++)
+        {
+            var message = Message.GetTestMessage();
+            var metaData = new MetaData { };
+            var sender = new RabbitMQSender<Message>(_rabbitMQSenderOptions);
+            await sender.SendAsync(message, metaData);
+        }
+
+        _rabbitMQSenderOptions.MessageEncryptionEnabled = true;
         for (int i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();

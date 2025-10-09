@@ -155,7 +155,6 @@ public static class MessagingCollectionExtensions
             RoutingKey = options.RoutingKeys[typeof(T).Name],
             QueueName = options.QueueNames[typeof(T).Name],
             AutomaticCreateEnabled = true,
-            MessageEncryptionEnabled = options.MessageEncryptionEnabled,
             MessageEncryptionKey = options.MessageEncryptionKey
         };
         services.AddTransient<IMessageReceiver<T>>(x => new RabbitMQReceiver<T>(receiverOptions, x.GetRequiredService<ILogger<RabbitMQReceiver<T>>>()));
