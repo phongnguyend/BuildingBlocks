@@ -6,7 +6,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
 public class RabbitMQSenderTests
 {
@@ -30,7 +30,7 @@ public class RabbitMQSenderTests
     public async Task SendAsync_Success()
     {
         _rabbitMQSenderOptions.MessageEncryptionEnabled = false;
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
@@ -39,7 +39,7 @@ public class RabbitMQSenderTests
         }
 
         _rabbitMQSenderOptions.MessageEncryptionEnabled = true;
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };

@@ -1,50 +1,39 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.AzureEventGrid;
+using DddDotNet.Infrastructure.Messaging.AzureEventHub;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
-public class AzureEventGridSenderTests
+public class AzureEventHubSenderTests
 {
-    private static string _domainEndpoint;
-    private static string _domainKey;
-    AzureEventGridHealthCheckOptions _healthCheckOptions;
+    private static string _connectionString;
 
-    public AzureEventGridSenderTests()
+    public AzureEventHubSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        _domainEndpoint = config["Messaging:AzureEventGrid:DomainEndpoint"];
-        _domainKey = config["Messaging:AzureEventGrid:DomainKey"];
-
-        _healthCheckOptions = new AzureEventGridHealthCheckOptions
-        {
-            DomainEndpoint = _domainEndpoint,
-        };
-
-        config.GetSection("Messaging:AzureEventGrid:HealthCheck").Bind(_healthCheckOptions);
+        _connectionString = config["Messaging:AzureEventHub:ConnectionString"];
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var gridOptions = new AzureEventGridOptions
+            var hubOptions = new AzureEventHubOptions
             {
-                DomainEndpoint = _domainEndpoint,
-                DomainKey = _domainKey,
-                Topic = "integration-test"
+                ConnectionString = _connectionString,
+                HubName = "integration-test"
             };
-            var sender = new AzureEventGridSender<Message>(gridOptions);
+            var sender = new AzureEventHubSender<Message>(hubOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -52,7 +41,12 @@ public class AzureEventGridSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AzureEventGridHealthCheck(_healthCheckOptions);
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = _connectionString,
+            HubName = "integration-test"
+        };
+        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -60,8 +54,12 @@ public class AzureEventGridSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _healthCheckOptions.DomainName += "abc";
-        var healthCheck = new AzureEventGridHealthCheck(_healthCheckOptions);
+        var hubOptions = new AzureEventHubOptions
+        {
+            ConnectionString = _connectionString,
+            HubName = "integration-test-not-exist"
+        };
+        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

@@ -1,40 +1,36 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AmazonSQS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
-public class AzureQueueSenderTests
+public class AmazonSqsSenderTests
 {
-    private static string _connectionString;
+    private AmazonSqsOptions _options;
 
-    public AzureQueueSenderTests()
+    public AmazonSqsSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        _connectionString = config["Messaging:AzureQueue:ConnectionString"];
+        _options = new AmazonSqsOptions();
+
+        config.GetSection("Messaging:AmazonSQS").Bind(_options);
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var queueOptions = new AzureQueueOptions
-            {
-                ConnectionString = _connectionString,
-                QueueName = "integration-test"
-            };
-            var sender = new AzureQueueSender<Message>(queueOptions);
+            var sender = new AmazonSqsSender<Message>(_options);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -42,12 +38,7 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var queueOptions = new AzureQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = "integration-test"
-        };
-        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
+        var healthCheck = new AmazonSqsHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -55,12 +46,8 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var queueOptions = new AzureQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = Guid.NewGuid().ToString()
-        };
-        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
+        _options.QueueUrl += "abc";
+        var healthCheck = new AmazonSqsHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

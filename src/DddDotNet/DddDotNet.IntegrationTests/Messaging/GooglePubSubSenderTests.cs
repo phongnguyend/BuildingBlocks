@@ -1,36 +1,36 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.AmazonKinesis;
+using DddDotNet.Infrastructure.Messaging.GooglePubSub;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
-public class AmazonKinesisSenderTests
+public class GooglePubSubSenderTests
 {
-    private AmazonKinesisOptions _options;
+    private GooglePubSubOptions _options;
 
-    public AmazonKinesisSenderTests()
+    public GooglePubSubSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        _options = new AmazonKinesisOptions();
+        _options = new GooglePubSubOptions();
 
-        config.GetSection("Messaging:AmazonKinesis").Bind(_options);
+        config.GetSection("Messaging:GooglePubSub").Bind(_options);
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AmazonKinesisSender<Message>(_options);
+            var sender = new GooglePubSubSender<Message>(_options);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -38,7 +38,7 @@ public class AmazonKinesisSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AmazonKinesisHealthCheck(_options);
+        var healthCheck = new GooglePubSubHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,8 +46,8 @@ public class AmazonKinesisSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.StreamName += "abc";
-        var healthCheck = new AmazonKinesisHealthCheck(_options);
+        _options.TopicId += "abc";
+        var healthCheck = new GooglePubSubHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

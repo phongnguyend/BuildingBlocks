@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
 public class Message
 {

@@ -1,36 +1,40 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.AmazonEventBridge;
+using DddDotNet.Infrastructure.Messaging.AzureQueue;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
-public class AmazonEventBridgeSenderTests
+public class AzureQueueSenderTests
 {
-    private AmazonEventBridgeOptions _options;
+    private static string _connectionString;
 
-    public AmazonEventBridgeSenderTests()
+    public AzureQueueSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        _options = new AmazonEventBridgeOptions();
-
-        config.GetSection("Messaging:AmazonEventBridge").Bind(_options);
+        _connectionString = config["Messaging:AzureQueue:ConnectionString"];
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new AmazonEventBridgeSender<Message>(_options);
+            var queueOptions = new AzureQueueOptions
+            {
+                ConnectionString = _connectionString,
+                QueueName = "integration-test"
+            };
+            var sender = new AzureQueueSender<Message>(queueOptions);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -38,8 +42,12 @@ public class AmazonEventBridgeSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        _options.EndpointName = "ddddotnet";
-        var healthCheck = new AmazonEventBridgeHealthCheck(_options);
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = "integration-test"
+        };
+        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -47,8 +55,12 @@ public class AmazonEventBridgeSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.EndpointName = "xxx";
-        var healthCheck = new AmazonEventBridgeHealthCheck(_options);
+        var queueOptions = new AzureQueueOptions
+        {
+            ConnectionString = _connectionString,
+            QueueName = Guid.NewGuid().ToString()
+        };
+        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

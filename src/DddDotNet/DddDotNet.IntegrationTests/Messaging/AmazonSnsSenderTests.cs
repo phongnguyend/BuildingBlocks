@@ -1,36 +1,36 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.Kafka;
+using DddDotNet.Infrastructure.Messaging.AmazonSNS;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Messaging;
+namespace DddDotNet.IntegrationTests.Messaging;
 
-public class KafkaSenderTests
+public class AmazonSnsSenderTests
 {
-    private static KafkaOptions _options;
+    private AmazonSnsOptions _options;
 
-    public KafkaSenderTests()
+    public AmazonSnsSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        _options = new KafkaOptions();
+        _options = new AmazonSnsOptions();
 
-        config.GetSection("Messaging:Kafka").Bind(_options);
+        config.GetSection("Messaging:AmazonSNS").Bind(_options);
     }
 
     [Fact]
     public async Task SendAsync_Success()
     {
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var sender = new KafkaSender<Message>("localhost:9092", "ddddotnet");
+            var sender = new AmazonSnsSender<Message>(_options);
             await sender.SendAsync(message, metaData);
         }
     }
@@ -38,7 +38,7 @@ public class KafkaSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new KafkaHealthCheck("localhost:9092", "healthcheck");
+        var healthCheck = new AmazonSnsHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,7 +46,8 @@ public class KafkaSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var healthCheck = new KafkaHealthCheck("xxxx:9092", "healthcheck");
+        _options.TopicARN += "abc";
+        var healthCheck = new AmazonSnsHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }
