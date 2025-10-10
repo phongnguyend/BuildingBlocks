@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Caching;
+namespace DddDotNet.IntegrationTests.Caching;
 
 public class CosmosDistributedCachePerformanceTests : IDisposable
 {
@@ -49,7 +49,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Act
         var tasks = new List<Task>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             var value = $"value-{i}";
@@ -78,7 +78,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
         
         // Setup data first
         var setupTasks = new List<Task>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             var value = $"value-{i}";
@@ -91,7 +91,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Act
         var getTasks = new List<Task<byte[]>>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             getTasks.Add(_distributedCache.GetAsync(key));
@@ -120,7 +120,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
         var tasks = new List<Task>();
         
         // Mix of set, get, and remove operations
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             var value = $"value-{i}";
@@ -165,7 +165,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Act
         var tasks = new List<Task>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             tasks.Add(_distributedCache.SetAsync(key, largeValueBytes));
@@ -177,11 +177,11 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
         // Assert
         _output.WriteLine($"Large value operations ({operationCount} items of {largeValueBytes.Length} bytes each) completed in {stopwatch.ElapsedMilliseconds}ms");
         _output.WriteLine($"Average time per operation: {(double)stopwatch.ElapsedMilliseconds / operationCount:F2}ms");
-        _output.WriteLine($"Total data transferred: {(largeValueBytes.Length * operationCount) / 1024:F2} KB");
+        _output.WriteLine($"Total data transferred: {largeValueBytes.Length * operationCount / 1024:F2} KB");
         
         // Verify the data was stored correctly
         var getResults = new List<Task<byte[]>>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-{i}";
             getResults.Add(_distributedCache.GetAsync(key));
@@ -208,7 +208,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Sequential operations
         var sequentialStopwatch = Stopwatch.StartNew();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-sequential-{i}";
             await _distributedCache.SetAsync(key, valueBytes);
@@ -218,7 +218,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
         // Parallel operations
         var parallelStopwatch = Stopwatch.StartNew();
         var parallelTasks = new List<Task>();
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             var key = $"{keyPrefix}-parallel-{i}";
             parallelTasks.Add(_distributedCache.SetAsync(key, valueBytes));
@@ -247,7 +247,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Act - Perform many concurrent operations on a limited set of keys
         var tasks = new List<Task>();
-        for (int i = 0; i < concurrentOperations; i++)
+        for (var i = 0; i < concurrentOperations; i++)
         {
             var operationIndex = i;
             var keyIndex = i % uniqueKeys;
@@ -284,7 +284,7 @@ public class CosmosDistributedCachePerformanceTests : IDisposable
 
         // Assert - Verify final state
         var finalResults = new List<Task<byte[]>>();
-        for (int i = 0; i < uniqueKeys; i++)
+        for (var i = 0; i < uniqueKeys; i++)
         {
             var key = $"{keyPrefix}-{i}";
             finalResults.Add(_distributedCache.GetAsync(key));

@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Storages;
-using DddDotNet.Infrastructure.Storages.Local;
+using DddDotNet.Infrastructure.Storages.Sftp;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -8,26 +8,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
-public class LocalFileStorageManagerTests
+public class SftpStorageManagerTests
 {
-    LocalOptions _options = new LocalOptions();
+    SftpOptions _options = new SftpOptions();
 
-    public LocalFileStorageManagerTests()
+    public SftpStorageManagerTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        config.GetSection("Storage:Local").Bind(_options);
+        config.GetSection("Storage:Sftp").Bind(_options);
     }
 
     [Fact]
     public async Task CreateAsync_Success()
     {
-        LocalFileStorageManager localFileStorageManager = new LocalFileStorageManager(_options);
+        using var sftpStorageManager = new SftpStorageManager(_options);
 
         var fileEntry = new FileEntry
         {
@@ -36,34 +36,34 @@ public class LocalFileStorageManagerTests
 
         var fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test"));
 
-        await localFileStorageManager.CreateAsync(fileEntry, fileStream);
+        await sftpStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content1 = Encoding.UTF8.GetString(await localFileStorageManager.ReadAsync(fileEntry));
+        var content1 = Encoding.UTF8.GetString(await sftpStorageManager.ReadAsync(fileEntry));
 
         fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test2"));
 
-        await localFileStorageManager.CreateAsync(fileEntry, fileStream);
+        await sftpStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content2 = Encoding.UTF8.GetString(await localFileStorageManager.ReadAsync(fileEntry));
+        var content2 = Encoding.UTF8.GetString(await sftpStorageManager.ReadAsync(fileEntry));
 
-        await localFileStorageManager.ArchiveAsync(fileEntry);
+        await sftpStorageManager.ArchiveAsync(fileEntry);
 
-        await localFileStorageManager.UnArchiveAsync(fileEntry);
+        await sftpStorageManager.UnArchiveAsync(fileEntry);
 
         var path = Path.GetTempFileName();
-        await localFileStorageManager.DownloadAsync(fileEntry, path);
+        await sftpStorageManager.DownloadAsync(fileEntry, path);
         var content3 = File.ReadAllText(path);
         File.Delete(path);
 
         path = Path.GetTempFileName();
         using (var tempFileStream = File.OpenWrite(path))
         {
-            await localFileStorageManager.DownloadAsync(fileEntry, tempFileStream);
+            await sftpStorageManager.DownloadAsync(fileEntry, tempFileStream);
         }
         var content4 = File.ReadAllText(path);
         File.Delete(path);
 
-        await localFileStorageManager.DeleteAsync(fileEntry);
+        await sftpStorageManager.DeleteAsync(fileEntry);
 
         Assert.Equal("Test", content1);
         Assert.Equal("Test2", content2);
@@ -74,10 +74,7 @@ public class LocalFileStorageManagerTests
     [Fact]
     public async Task HealthCheck_Success()
     {
-        var healthCheck = new LocalFileHealthCheck(new LocalFileHealthCheckOptions
-        {
-            Path = _options.Path
-        });
+        var healthCheck = new SftpStorageHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(null);
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }

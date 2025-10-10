@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
 public class FtpStorageManagerTests
 {
@@ -27,7 +27,7 @@ public class FtpStorageManagerTests
     [Fact]
     public async Task CreateAsync_Success()
     {
-        using FtpStorageManager ftpStorageManager = new FtpStorageManager(_options);
+        using var ftpStorageManager = new FtpStorageManager(_options);
 
         var fileEntry = new FileEntry
         {

@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Storages;
-using DddDotNet.Infrastructure.Storages.Sftp;
+using DddDotNet.Infrastructure.Storages.Azure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -8,26 +8,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
-public class SftpStorageManagerTests
+public class AzureBlobStorageManagerTests
 {
-    SftpOptions _options = new SftpOptions();
+    AzureBlobOptions _options = new AzureBlobOptions();
 
-    public SftpStorageManagerTests()
+    public AzureBlobStorageManagerTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        config.GetSection("Storage:Sftp").Bind(_options);
+        config.GetSection("Storage:Azure").Bind(_options);
     }
 
     [Fact]
     public async Task CreateAsync_Success()
     {
-        using SftpStorageManager sftpStorageManager = new SftpStorageManager(_options);
+        var azureBlobStorageManager = new AzureBlobStorageManager(_options);
 
         var fileEntry = new FileEntry
         {
@@ -36,34 +36,34 @@ public class SftpStorageManagerTests
 
         var fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test"));
 
-        await sftpStorageManager.CreateAsync(fileEntry, fileStream);
+        await azureBlobStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content1 = Encoding.UTF8.GetString(await sftpStorageManager.ReadAsync(fileEntry));
+        var content1 = Encoding.UTF8.GetString(await azureBlobStorageManager.ReadAsync(fileEntry));
 
         fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test2"));
 
-        await sftpStorageManager.CreateAsync(fileEntry, fileStream);
+        await azureBlobStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content2 = Encoding.UTF8.GetString(await sftpStorageManager.ReadAsync(fileEntry));
+        var content2 = Encoding.UTF8.GetString(await azureBlobStorageManager.ReadAsync(fileEntry));
 
-        await sftpStorageManager.ArchiveAsync(fileEntry);
+        await azureBlobStorageManager.ArchiveAsync(fileEntry);
 
-        await sftpStorageManager.UnArchiveAsync(fileEntry);
+        await azureBlobStorageManager.UnArchiveAsync(fileEntry);
 
         var path = Path.GetTempFileName();
-        await sftpStorageManager.DownloadAsync(fileEntry, path);
+        await azureBlobStorageManager.DownloadAsync(fileEntry, path);
         var content3 = File.ReadAllText(path);
         File.Delete(path);
 
         path = Path.GetTempFileName();
         using (var tempFileStream = File.OpenWrite(path))
         {
-            await sftpStorageManager.DownloadAsync(fileEntry, tempFileStream);
+            await azureBlobStorageManager.DownloadAsync(fileEntry, tempFileStream);
         }
         var content4 = File.ReadAllText(path);
         File.Delete(path);
 
-        await sftpStorageManager.DeleteAsync(fileEntry);
+        await azureBlobStorageManager.DeleteAsync(fileEntry);
 
         Assert.Equal("Test", content1);
         Assert.Equal("Test2", content2);
@@ -74,7 +74,7 @@ public class SftpStorageManagerTests
     [Fact]
     public async Task HealthCheck_Success()
     {
-        var healthCheck = new SftpStorageHealthCheck(_options);
+        var healthCheck = new AzureBlobStorageHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(null);
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }

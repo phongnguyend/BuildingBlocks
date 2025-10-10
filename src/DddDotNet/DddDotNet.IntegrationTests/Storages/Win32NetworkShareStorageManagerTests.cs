@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
 public class Win32NetworkShareStorageManagerTests
 {
@@ -26,7 +26,7 @@ public class Win32NetworkShareStorageManagerTests
     [Fact]
     public async Task CreateAsync_Success()
     {
-        using Win32NetworkShareStorageManager networkShareStorageManager = new Win32NetworkShareStorageManager(_options);
+        using var networkShareStorageManager = new Win32NetworkShareStorageManager(_options);
 
         networkShareStorageManager.ResetConnection();
 

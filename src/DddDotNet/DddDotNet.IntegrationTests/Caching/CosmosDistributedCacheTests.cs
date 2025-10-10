@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Caching;
+namespace DddDotNet.IntegrationTests.Caching;
 
 public class CosmosDistributedCacheTests : IDisposable
 {
@@ -109,7 +109,7 @@ public class CosmosDistributedCacheTests : IDisposable
         await _distributedCache.SetAsync(key, valueBytes, options);
 
         // Access the value multiple times with delays less than sliding expiration
-        for (int i = 0; i < 3; i++)
+        for (var i = 0; i < 3; i++)
         {
             await Task.Delay(TimeSpan.FromSeconds(1));
             var result = await _distributedCache.GetAsync(key);
@@ -212,7 +212,7 @@ public class CosmosDistributedCacheTests : IDisposable
         var keyPrefix = $"concurrent-test-{Guid.NewGuid()}";
 
         // Act - Perform concurrent set and get operations
-        for (int i = 0; i < tasks.Length; i++)
+        for (var i = 0; i < tasks.Length; i++)
         {
             var index = i;
             tasks[i] = Task.Run(async () =>

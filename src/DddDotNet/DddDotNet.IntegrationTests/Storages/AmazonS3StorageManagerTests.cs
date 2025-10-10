@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using UriHelper;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
 public class AmazonS3StorageManagerTests
 {
@@ -28,7 +28,7 @@ public class AmazonS3StorageManagerTests
     [Fact]
     public async Task CreateAsync_Success()
     {
-        AmazonS3StorageManager amazonS3StorageManager = new AmazonS3StorageManager(_options);
+        var amazonS3StorageManager = new AmazonS3StorageManager(_options);
 
         var fileEntry = new FileEntry
         {

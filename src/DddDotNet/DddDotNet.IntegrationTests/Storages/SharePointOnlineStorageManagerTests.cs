@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using UriHelper;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
 public class SharePointOnlineStorageManagerTests
 {
@@ -37,7 +37,7 @@ public class SharePointOnlineStorageManagerTests
     [Fact]
     public async Task CreateAsync_Success()
     {
-        SharePointOnlineStorageManager sharePointOnlineStorageManager = new SharePointOnlineStorageManager(_options, _memoryCache);
+        var sharePointOnlineStorageManager = new SharePointOnlineStorageManager(_options, _memoryCache);
 
         var fileEntry = new FileEntry
         {

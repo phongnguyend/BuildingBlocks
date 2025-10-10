@@ -9,7 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Caching;
+namespace DddDotNet.IntegrationTests.Caching;
 
 public class DistributedCacheExtensionsTests
 {

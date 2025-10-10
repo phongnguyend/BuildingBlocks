@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Storages;
-using DddDotNet.Infrastructure.Storages.Azure;
+using DddDotNet.Infrastructure.Storages.Smb;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.IO;
@@ -7,26 +7,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
-public class AzureFileShareStorageManagerTests
+public class SmbFileShareStorageManagerTests
 {
-    AzureFileShareOptions _options = new AzureFileShareOptions();
+    SmbFileShareOptions _options = new SmbFileShareOptions();
 
-    public AzureFileShareStorageManagerTests()
+    public SmbFileShareStorageManagerTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        config.GetSection("Storage:AzureFileShare").Bind(_options);
+        config.GetSection("Storage:SmbFileShare").Bind(_options);
     }
 
     [Fact]
     public async Task CreateAsync_Success()
     {
-        AzureFileShareStorageManager azureFileShareStorageManager = new AzureFileShareStorageManager(_options);
+        using var smbFileShareStorageManager = new SmbFileShareStorageManager(_options);
 
         var fileEntry = new FileEntry
         {
@@ -35,34 +35,34 @@ public class AzureFileShareStorageManagerTests
 
         var fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test"));
 
-        await azureFileShareStorageManager.CreateAsync(fileEntry, fileStream);
+        await smbFileShareStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content1 = Encoding.UTF8.GetString(await azureFileShareStorageManager.ReadAsync(fileEntry));
+        var content1 = Encoding.UTF8.GetString(await smbFileShareStorageManager.ReadAsync(fileEntry));
 
         fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test2"));
 
-        await azureFileShareStorageManager.CreateAsync(fileEntry, fileStream);
+        await smbFileShareStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content2 = Encoding.UTF8.GetString(await azureFileShareStorageManager.ReadAsync(fileEntry));
+        var content2 = Encoding.UTF8.GetString(await smbFileShareStorageManager.ReadAsync(fileEntry));
 
-        await azureFileShareStorageManager.ArchiveAsync(fileEntry);
+        await smbFileShareStorageManager.ArchiveAsync(fileEntry);
 
-        await azureFileShareStorageManager.UnArchiveAsync(fileEntry);
+        await smbFileShareStorageManager.UnArchiveAsync(fileEntry);
 
         var path = Path.GetTempFileName();
-        await azureFileShareStorageManager.DownloadAsync(fileEntry, path);
+        await smbFileShareStorageManager.DownloadAsync(fileEntry, path);
         var content3 = File.ReadAllText(path);
         File.Delete(path);
 
         path = Path.GetTempFileName();
         using (var tempFileStream = File.OpenWrite(path))
         {
-            await azureFileShareStorageManager.DownloadAsync(fileEntry, tempFileStream);
+            await smbFileShareStorageManager.DownloadAsync(fileEntry, tempFileStream);
         }
         var content4 = File.ReadAllText(path);
         File.Delete(path);
 
-        await azureFileShareStorageManager.DeleteAsync(fileEntry);
+        await smbFileShareStorageManager.DeleteAsync(fileEntry);
 
         Assert.Equal("Test", content1);
         Assert.Equal("Test2", content2);

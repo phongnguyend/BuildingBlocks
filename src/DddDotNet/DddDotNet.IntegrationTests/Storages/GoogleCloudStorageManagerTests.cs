@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Storages;
-using DddDotNet.Infrastructure.Storages.Azure;
+using DddDotNet.Infrastructure.Storages.Google;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -8,26 +8,26 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Storages;
+namespace DddDotNet.IntegrationTests.Storages;
 
-public class AzureBlobStorageManagerTests
+public class GoogleCloudStorageManagerTests
 {
-    AzureBlobOptions _options = new AzureBlobOptions();
+    GoogleCloudStorageOptions _options = new GoogleCloudStorageOptions();
 
-    public AzureBlobStorageManagerTests()
+    public GoogleCloudStorageManagerTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
             .Build();
 
-        config.GetSection("Storage:Azure").Bind(_options);
+        config.GetSection("Storage:Google").Bind(_options);
     }
 
     [Fact]
     public async Task CreateAsync_Success()
     {
-        AzureBlobStorageManager azureBlobStorageManager = new AzureBlobStorageManager(_options);
+        var googleCloudStorageManager = new GoogleCloudStorageManager(_options);
 
         var fileEntry = new FileEntry
         {
@@ -36,34 +36,34 @@ public class AzureBlobStorageManagerTests
 
         var fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test"));
 
-        await azureBlobStorageManager.CreateAsync(fileEntry, fileStream);
+        await googleCloudStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content1 = Encoding.UTF8.GetString(await azureBlobStorageManager.ReadAsync(fileEntry));
+        var content1 = Encoding.UTF8.GetString(await googleCloudStorageManager.ReadAsync(fileEntry));
 
         fileStream = new MemoryStream(Encoding.UTF8.GetBytes("Test2"));
 
-        await azureBlobStorageManager.CreateAsync(fileEntry, fileStream);
+        await googleCloudStorageManager.CreateAsync(fileEntry, fileStream);
 
-        var content2 = Encoding.UTF8.GetString(await azureBlobStorageManager.ReadAsync(fileEntry));
+        var content2 = Encoding.UTF8.GetString(await googleCloudStorageManager.ReadAsync(fileEntry));
 
-        await azureBlobStorageManager.ArchiveAsync(fileEntry);
+        await googleCloudStorageManager.ArchiveAsync(fileEntry);
 
-        await azureBlobStorageManager.UnArchiveAsync(fileEntry);
+        await googleCloudStorageManager.UnArchiveAsync(fileEntry);
 
         var path = Path.GetTempFileName();
-        await azureBlobStorageManager.DownloadAsync(fileEntry, path);
+        await googleCloudStorageManager.DownloadAsync(fileEntry, path);
         var content3 = File.ReadAllText(path);
         File.Delete(path);
 
         path = Path.GetTempFileName();
         using (var tempFileStream = File.OpenWrite(path))
         {
-            await azureBlobStorageManager.DownloadAsync(fileEntry, tempFileStream);
+            await googleCloudStorageManager.DownloadAsync(fileEntry, tempFileStream);
         }
         var content4 = File.ReadAllText(path);
         File.Delete(path);
 
-        await azureBlobStorageManager.DeleteAsync(fileEntry);
+        await googleCloudStorageManager.DeleteAsync(fileEntry);
 
         Assert.Equal("Test", content1);
         Assert.Equal("Test2", content2);
@@ -74,7 +74,7 @@ public class AzureBlobStorageManagerTests
     [Fact]
     public async Task HealthCheck_Success()
     {
-        var healthCheck = new AzureBlobStorageHealthCheck(_options);
+        var healthCheck = new GoogleCloudStorageHealthCheck(_options);
         var checkResult = await healthCheck.CheckHealthAsync(null);
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
