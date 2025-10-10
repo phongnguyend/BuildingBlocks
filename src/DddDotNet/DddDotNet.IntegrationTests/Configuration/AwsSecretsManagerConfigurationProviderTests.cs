@@ -4,14 +4,14 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Configurations;
+namespace DddDotNet.IntegrationTests.Configuration;
 
-public class GoogleCloudSecretManagerConfigurationProviderTests
+public class AwsSecretsManagerConfigurationProviderTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
     IConfigurationRoot _config;
 
-    public GoogleCloudSecretManagerConfigurationProviderTests(ITestOutputHelper testOutputHelper)
+    public AwsSecretsManagerConfigurationProviderTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
 
@@ -23,10 +23,12 @@ public class GoogleCloudSecretManagerConfigurationProviderTests
         _config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
-            .AddGoogleCloudSecretManager(new GoogleCloudSecretManagerOptions
+            .AddAwsSecretsManager(new AwsSecretsManagerOptions
             {
-                CredentialFilePath = tempConfig["Configuration:GoogleCloudSecretManager:CredentialFilePath"],
-                Parent = tempConfig["Configuration:GoogleCloudSecretManager:Parent"]
+                AccessKeyID = tempConfig["Configuration:AwsSecretsManager:AccessKeyID"],
+                SecretAccessKey = tempConfig["Configuration:AwsSecretsManager:SecretAccessKey"],
+                SecretName = tempConfig["Configuration:AwsSecretsManager:SecretName"],
+                RegionEndpoint = tempConfig["Configuration:AwsSecretsManager:RegionEndpoint"]
             })
             .Build();
     }

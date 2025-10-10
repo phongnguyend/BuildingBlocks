@@ -1,20 +1,20 @@
 ﻿using DddDotNet.Domain.Entities;
-using DddDotNet.Infrastructure.Excel.OpenXml;
+using DddDotNet.Infrastructure.Excel.ClosedXML;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Excel.OpenXml;
+namespace DddDotNet.IntegrationTests.Excel.ClosedXML;
 
 public class ConfigurationEntryExcelTests
 {
     [Fact]
     public async Task Read_ReturnData()
     {
-        ConfigurationEntryExcelReader reader = new ConfigurationEntryExcelReader();
+        var reader = new ConfigurationEntryExcelReader();
 
-        using var fileStream = File.OpenRead("Infrastructure/Excel/ConfigurationEntries.xlsx");
+        using var fileStream = File.OpenRead("Excel/ConfigurationEntries.xlsx");
         var entries = await reader.ReadAsync(fileStream);
 
         Assert.Equal(8, entries.Count);
@@ -27,9 +27,9 @@ public class ConfigurationEntryExcelTests
     [Fact]
     public async Task Write_Ok()
     {
-        ConfigurationEntryExcelWriter writer = new ConfigurationEntryExcelWriter();
+        var writer = new ConfigurationEntryExcelWriter();
 
-        using (var fileStream = new FileStream("Infrastructure/Excel/ConfigurationEntries1.xlsx", FileMode.Create))
+        using (var fileStream = File.OpenWrite("Excel/ConfigurationEntries1.xlsx"))
         {
             await writer.WriteAsync(new List<ConfigurationEntry> {
                 new ConfigurationEntry
@@ -50,9 +50,9 @@ public class ConfigurationEntryExcelTests
             }, fileStream);
         }
 
-        ConfigurationEntryExcelReader reader = new ConfigurationEntryExcelReader();
+        var reader = new ConfigurationEntryExcelReader();
 
-        using var fileStream2 = File.OpenRead("Infrastructure/Excel/ConfigurationEntries1.xlsx");
+        using var fileStream2 = File.OpenRead("Excel/ConfigurationEntries1.xlsx");
         var entries = await reader.ReadAsync(fileStream2);
 
         Assert.Equal(3, entries.Count);

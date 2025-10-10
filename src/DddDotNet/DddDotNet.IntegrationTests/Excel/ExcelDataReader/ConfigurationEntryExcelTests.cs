@@ -3,7 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Excel.ExcelDataReader;
+namespace DddDotNet.IntegrationTests.Excel.ExcelDataReader;
 
 public class ConfigurationEntryExcelTests
 {
@@ -12,9 +12,9 @@ public class ConfigurationEntryExcelTests
     {
         System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
 
-        ConfigurationEntryExcelReader reader = new ConfigurationEntryExcelReader();
+        var reader = new ConfigurationEntryExcelReader();
 
-        using var fileStream = File.OpenRead("Infrastructure/Excel/ConfigurationEntries.xlsx");
+        using var fileStream = File.OpenRead("Excel/ConfigurationEntries.xlsx");
         var entries = await reader.ReadAsync(fileStream);
 
         Assert.Equal(8, entries.Count);

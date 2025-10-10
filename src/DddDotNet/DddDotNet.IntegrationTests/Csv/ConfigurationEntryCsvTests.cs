@@ -1,21 +1,22 @@
 ﻿using DddDotNet.Domain.Entities;
-using DddDotNet.Infrastructure.Excel.EPPlus;
+using DddDotNet.Infrastructure.Csv;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Excel.EPPlus;
+namespace DddDotNet.IntegrationTests.Csv;
 
-public class ConfigurationEntryExcelTests
+public class ConfigurationEntryCsvTests
 {
     [Fact]
     public async Task Read_ReturnData()
     {
-        ConfigurationEntryExcelReader reader = new ConfigurationEntryExcelReader();
+        var reader = new ConfigurationEntryCsvReader();
 
-        using var fileStream = File.OpenRead("Infrastructure/Excel/ConfigurationEntries.xlsx");
-        var entries = await reader.ReadAsync(fileStream);
+        using var fileStream = File.OpenRead("Csv/ConfigurationEntries.csv");
+        var entries = (await reader.ReadAsync(fileStream)).ToList();
 
         Assert.Equal(8, entries.Count);
         Assert.Equal("Key1", entries[0].Key);
@@ -27,9 +28,9 @@ public class ConfigurationEntryExcelTests
     [Fact]
     public async Task Write_Ok()
     {
-        ConfigurationEntryExcelWriter writer = new ConfigurationEntryExcelWriter();
+        var writer = new ConfigurationEntryCsvWriter();
 
-        using (var fileStream = File.OpenWrite("Infrastructure/Excel/ConfigurationEntries1.xlsx"))
+        using (var fileStream = File.OpenWrite("Csv/ConfigurationEntries1.csv"))
         {
             await writer.WriteAsync(new List<ConfigurationEntry> {
                 new ConfigurationEntry
@@ -50,10 +51,10 @@ public class ConfigurationEntryExcelTests
             }, fileStream);
         }
 
-        ConfigurationEntryExcelReader reader = new ConfigurationEntryExcelReader();
+        var reader = new ConfigurationEntryCsvReader();
 
-        using var fileStream2 = File.OpenRead("Infrastructure/Excel/ConfigurationEntries1.xlsx");
-        var entries = await reader.ReadAsync(fileStream2);
+        using var fileStream2 = File.OpenRead("Csv/ConfigurationEntries1.csv");
+        var entries = (await reader.ReadAsync(fileStream2)).ToList();
 
         Assert.Equal(3, entries.Count);
         Assert.Equal("Key1", entries[0].Key);

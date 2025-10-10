@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Identity;
+namespace DddDotNet.IntegrationTests.Identity;
 
 public class GoogleCloudIdentityProviderTests
 {

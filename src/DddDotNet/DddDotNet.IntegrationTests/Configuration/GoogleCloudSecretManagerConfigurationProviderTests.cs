@@ -4,32 +4,29 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Configurations;
+namespace DddDotNet.IntegrationTests.Configuration;
 
-public class HashiCorpVaultConfigurationProviderTests
+public class GoogleCloudSecretManagerConfigurationProviderTests
 {
     private readonly ITestOutputHelper _testOutputHelper;
     IConfigurationRoot _config;
 
-    public HashiCorpVaultConfigurationProviderTests(ITestOutputHelper testOutputHelper)
+    public GoogleCloudSecretManagerConfigurationProviderTests(ITestOutputHelper testOutputHelper)
     {
         _testOutputHelper = testOutputHelper;
 
-        // vault server -dev -dev-root-token-id=dev-only-token
+        var tempConfig = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
+            .Build();
 
         _config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
             .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
-            .AddHashiCorpVault(new HashiCorpVaultOptions
+            .AddGoogleCloudSecretManager(new GoogleCloudSecretManagerOptions
             {
-                Address = "http://localhost:8200/",
-                SecretEnginePath = "secret",
-                SecretPath = "DddDotNet",
-                AuthMethod = "Token",
-                Auth = new HashiCorpVaultAuthOptions
-                {
-                    Token = new HashiCorpVaultTokenAuthOptions { Token = "dev-only-token" }
-                }
+                CredentialFilePath = tempConfig["Configuration:GoogleCloudSecretManager:CredentialFilePath"],
+                Parent = tempConfig["Configuration:GoogleCloudSecretManager:Parent"]
             })
             .Build();
     }
@@ -40,7 +37,7 @@ public class HashiCorpVaultConfigurationProviderTests
         var storageProvider = _config["Storage:Provider"];
         var messageBokerProvider = _config["Messaging:Provider"];
 
-        _testOutputHelper.WriteLine($"Storage:Provider { storageProvider}");
+        _testOutputHelper.WriteLine($"Storage:Provider {storageProvider}");
         _testOutputHelper.WriteLine($"Messaging:Provider {messageBokerProvider}");
 
         return Task.CompletedTask;

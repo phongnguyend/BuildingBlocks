@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Configurations;
+namespace DddDotNet.IntegrationTests.Configuration;
 
 public class AwsSystemsManagerConfigurationProviderTests
 {

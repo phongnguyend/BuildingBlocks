@@ -1,22 +1,21 @@
 ﻿using DddDotNet.Domain.Entities;
-using DddDotNet.Infrastructure.Csv;
+using DddDotNet.Infrastructure.Excel.EPPlus;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace DddDotNet.IntegrationTests.Infrastructure.Csv;
+namespace DddDotNet.IntegrationTests.Excel.EPPlus;
 
-public class ConfigurationEntryCsvTests
+public class ConfigurationEntryExcelTests
 {
     [Fact]
     public async Task Read_ReturnData()
     {
-        var reader = new ConfigurationEntryCsvReader();
+        var reader = new ConfigurationEntryExcelReader();
 
-        using var fileStream = File.OpenRead("Infrastructure/Csv/ConfigurationEntries.csv");
-        var entries = (await reader.ReadAsync(fileStream)).ToList();
+        using var fileStream = File.OpenRead("Excel/ConfigurationEntries.xlsx");
+        var entries = await reader.ReadAsync(fileStream);
 
         Assert.Equal(8, entries.Count);
         Assert.Equal("Key1", entries[0].Key);
@@ -28,9 +27,9 @@ public class ConfigurationEntryCsvTests
     [Fact]
     public async Task Write_Ok()
     {
-        var writer = new ConfigurationEntryCsvWriter();
+        var writer = new ConfigurationEntryExcelWriter();
 
-        using (var fileStream = File.OpenWrite("Infrastructure/Csv/ConfigurationEntries1.csv"))
+        using (var fileStream = File.OpenWrite("Excel/ConfigurationEntries1.xlsx"))
         {
             await writer.WriteAsync(new List<ConfigurationEntry> {
                 new ConfigurationEntry
@@ -51,10 +50,10 @@ public class ConfigurationEntryCsvTests
             }, fileStream);
         }
 
-        var reader = new ConfigurationEntryCsvReader();
+        var reader = new ConfigurationEntryExcelReader();
 
-        using var fileStream2 = File.OpenRead("Infrastructure/Csv/ConfigurationEntries1.csv");
-        var entries = (await reader.ReadAsync(fileStream2)).ToList();
+        using var fileStream2 = File.OpenRead("Excel/ConfigurationEntries1.xlsx");
+        var entries = await reader.ReadAsync(fileStream2);
 
         Assert.Equal(3, entries.Count);
         Assert.Equal("Key1", entries[0].Key);
