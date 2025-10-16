@@ -28,8 +28,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{089100B1-113F-4E66-888A-E83F3999EAFD}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
 		global.json = global.json
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DddDotNet.MessageReceivers.RabbitMQ", "DddDotNet.MessageReceivers.RabbitMQ\DddDotNet.MessageReceivers.RabbitMQ.csproj", "{C5E39670-E207-48E6-ABF3-A3B0F33ACB01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +68,10 @@ Global
 		{3A74E8C4-9FA8-4B47-A4D9-2F089B04CCA9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3A74E8C4-9FA8-4B47-A4D9-2F089B04CCA9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3A74E8C4-9FA8-4B47-A4D9-2F089B04CCA9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5E39670-E207-48E6-ABF3-A3B0F33ACB01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5E39670-E207-48E6-ABF3-A3B0F33ACB01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5E39670-E207-48E6-ABF3-A3B0F33ACB01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5E39670-E207-48E6-ABF3-A3B0F33ACB01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -77,6 +84,7 @@ Global
 		{6C5A090A-B1B5-4168-B7AA-4D0ED605945F} = {3A3479D3-6A45-4C7E-9A6B-0354F4FC35B5}
 		{E383AAF3-7785-4236-9B3E-13136B87622E} = {3A3479D3-6A45-4C7E-9A6B-0354F4FC35B5}
 		{3A74E8C4-9FA8-4B47-A4D9-2F089B04CCA9} = {3A3479D3-6A45-4C7E-9A6B-0354F4FC35B5}
+		{C5E39670-E207-48E6-ABF3-A3B0F33ACB01} = {3A3479D3-6A45-4C7E-9A6B-0354F4FC35B5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {0C29D4B4-D6A6-4122-A5E2-58583AC07FCA}

@@ -1,0 +1,7 @@
+<Project>
+
+  <PropertyGroup>
+    <WarningsAsErrors>CA2017,CS0108,CS0114,CS0168,CS0219,CS1998,CS4014,CS8073,xUnit1031</WarningsAsErrors>
+  </PropertyGroup>
+
+</Project>

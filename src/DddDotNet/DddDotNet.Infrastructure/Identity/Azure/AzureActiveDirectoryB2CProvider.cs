@@ -47,7 +47,7 @@ public class AzureActiveDirectoryB2CProvider : IUserProvider
 
             user.Id = createdUser.Id;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }
@@ -91,7 +91,7 @@ public class AzureActiveDirectoryB2CProvider : IUserProvider
 
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }
@@ -133,7 +133,7 @@ public class AzureActiveDirectoryB2CProvider : IUserProvider
 
             throw;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }

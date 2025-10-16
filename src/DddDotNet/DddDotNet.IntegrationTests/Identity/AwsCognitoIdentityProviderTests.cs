@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.Identity;
-using DddDotNet.Infrastructure.Identity.GoogleCloud;
+using DddDotNet.Infrastructure.Identity.Amazon;
 using Microsoft.Extensions.Configuration;
 using System;
 using System.Threading.Tasks;

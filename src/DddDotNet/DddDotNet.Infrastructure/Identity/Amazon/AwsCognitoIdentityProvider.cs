@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace DddDotNet.Infrastructure.Identity.GoogleCloud;
+namespace DddDotNet.Infrastructure.Identity.Amazon;
 
 public class AwsCognitoIdentityProvider : IUserProvider
 {
@@ -51,7 +51,7 @@ public class AwsCognitoIdentityProvider : IUserProvider
 
             user.Id = user.Username;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             throw;
         }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using System.Globalization;
+using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Localization;
 
@@ -20,7 +21,7 @@ public static class LocalizationServiceCollectionExtensions
             });
 
             services.AddSingleton<IStringLocalizerFactory, SqlServerStringLocalizerFactory>();
-            services.AddScoped<IStringLocalizer>(provider => provider.GetRequiredService<IStringLocalizerFactory>().Create(null));
+            services.AddScoped(provider => provider.GetRequiredService<IStringLocalizerFactory>().Create(null));
             services.AddLocalization();
 
             services.Configure<RequestLocalizationOptions>(options =>
@@ -35,11 +36,11 @@ public static class LocalizationServiceCollectionExtensions
                 options.SupportedCultures = supportedCultures;
                 options.SupportedUICultures = supportedCultures;
 
-                options.AddInitialRequestCultureProvider(new CustomRequestCultureProvider(async context =>
+                options.AddInitialRequestCultureProvider(new CustomRequestCultureProvider(context =>
                 {
                     // My custom request culture logic
                     // return new ProviderCultureResult("vi-VN");
-                    return new ProviderCultureResult("en-US");
+                    return Task.FromResult(new ProviderCultureResult("en-US"));
                 }));
             });
         }

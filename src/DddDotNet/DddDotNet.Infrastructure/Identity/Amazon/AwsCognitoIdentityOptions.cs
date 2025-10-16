@@ -1,6 +1,6 @@
 ﻿using Amazon.CognitoIdentityProvider;
 
-namespace DddDotNet.Infrastructure.Identity.GoogleCloud;
+namespace DddDotNet.Infrastructure.Identity.Amazon;
 
 public class AwsCognitoIdentityOptions
 {
