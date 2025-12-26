@@ -1,6 +1,6 @@
 ﻿using Azure.Identity;
 using Microsoft.Azure.Cosmos;
-using System;
+using System.Net.Http;
 
 namespace DddDotNet.Infrastructure.Caching;
 
@@ -47,6 +47,10 @@ public class SqlServerOptions
 
 public class CosmosOptions
 {
+    public bool UseEmulator { get; set; }
+
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string AccountEndpoint { get; set; }
@@ -61,26 +65,32 @@ public class CosmosOptions
     {
         var options = GetCosmosClientOptions();
 
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return options == null ?
-                new CosmosClient(ConnectionString) :
-                new CosmosClient(ConnectionString, options);
-        }
-        else if (!string.IsNullOrWhiteSpace(AccountEndpoint))
+        if (UseManagedIdentity)
         {
             return options == null ?
                 new CosmosClient(AccountEndpoint, new DefaultAzureCredential()) :
                 new CosmosClient(AccountEndpoint, new DefaultAzureCredential(), options);
         }
-        else
-        {
-            throw new InvalidOperationException("Either ConnectionString or AccountEndpoint must be provided.");
-        }
+
+        return options == null ?
+            new CosmosClient(ConnectionString) :
+            new CosmosClient(ConnectionString, options);
     }
 
     private CosmosClientOptions GetCosmosClientOptions()
     {
+        if (UseEmulator)
+        {
+            return new CosmosClientOptions
+            {
+                HttpClientFactory = () => new HttpClient(new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+                }),
+                ConnectionMode = ConnectionMode.Gateway,
+            };
+        }
+
         if (CosmosClientOptions == null)
         {
             return null;

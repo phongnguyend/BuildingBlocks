@@ -1,0 +1,7 @@
+services:
+    azure-cosmos-db-emulator:
+        image: "mcr.microsoft.com/cosmosdb/linux/azure-cosmos-emulator:vnext-preview"
+        ports:
+          - "8081:8081"
+          - "1234:1234"
+        command: ["--protocol", "https"]
