@@ -15,6 +15,8 @@ public class AzureServiceBusOptions
 
 public class AzureServiceBusNameSpaceOptions
 {
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string Namespace { get; set; }
@@ -25,18 +27,16 @@ public class AzureServiceBusNameSpaceOptions
     {
         var options = GetServiceBusClientOptions();
 
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return options == null ?
-                new ServiceBusClient(ConnectionString) :
-                new ServiceBusClient(ConnectionString, options);
-        }
-        else
+        if (UseManagedIdentity)
         {
             return options == null ?
                 new ServiceBusClient(Namespace, new DefaultAzureCredential()) :
                 new ServiceBusClient(Namespace, new DefaultAzureCredential(), options);
         }
+
+        return options == null ?
+            new ServiceBusClient(ConnectionString) :
+            new ServiceBusClient(ConnectionString, options);
     }
 
     private ServiceBusClientOptions GetServiceBusClientOptions()
