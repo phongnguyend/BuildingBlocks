@@ -15,16 +15,16 @@ public static class ConfigurationCollectionExtensions
 
         if (options?.AzureAppConfiguration?.IsEnabled ?? false)
         {
-            if (!string.IsNullOrEmpty(options.AzureAppConfiguration.ConnectionString))
-            {
-                configurationBuilder.AddAzureAppConfiguration(options.AzureAppConfiguration.ConnectionString);
-            }
-            else
+            if (options.AzureAppConfiguration.UseManagedIdentity)
             {
                 configurationBuilder.AddAzureAppConfiguration(opt =>
                 {
                     opt.Connect(new Uri(options.AzureAppConfiguration.Endpoint), new DefaultAzureCredential());
                 });
+            }
+            else
+            {
+                configurationBuilder.AddAzureAppConfiguration(options.AzureAppConfiguration.ConnectionString);
             }
         }
 

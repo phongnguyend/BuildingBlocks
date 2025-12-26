@@ -17,6 +17,8 @@ public class AzureEventGridsOptions
 
 public class AzureEventGridOptions
 {
+    public bool UseManagedIdentity { get; set; }
+
     public string DomainEndpoint { get; set; }
 
     public string DomainKey { get; set; }
@@ -25,13 +27,11 @@ public class AzureEventGridOptions
 
     public EventGridPublisherClient CreateEventGridPublisherClient()
     {
-        if (!string.IsNullOrWhiteSpace(DomainKey))
-        {
-            return new EventGridPublisherClient(new Uri(DomainEndpoint), new AzureKeyCredential(DomainKey));
-        }
-        else
+        if (UseManagedIdentity)
         {
             return new EventGridPublisherClient(new Uri(DomainEndpoint), new DefaultAzureCredential());
         }
+
+        return new EventGridPublisherClient(new Uri(DomainEndpoint), new AzureKeyCredential(DomainKey));
     }
 }

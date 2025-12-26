@@ -6,6 +6,8 @@ namespace DddDotNet.Infrastructure.Storages.Azure;
 
 public class AzureBlobOptions
 {
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string StorageAccountName { get; set; }
@@ -16,14 +18,12 @@ public class AzureBlobOptions
 
     public BlobContainerClient CreateBlobContainerClient()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return new BlobContainerClient(ConnectionString, Container);
-        }
-        else
+        if (UseManagedIdentity)
         {
             var containerUri = new Uri($"https://{StorageAccountName}.blob.core.windows.net/{Container}");
             return new BlobContainerClient(containerUri, new DefaultAzureCredential());
         }
+
+        return new BlobContainerClient(ConnectionString, Container);
     }
 }

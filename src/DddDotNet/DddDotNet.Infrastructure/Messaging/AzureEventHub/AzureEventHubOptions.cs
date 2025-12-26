@@ -20,6 +20,8 @@ public class AzureEventHubsOptions
 
 public class AzureEventHubOptions
 {
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string HubName { get; set; }
@@ -30,44 +32,32 @@ public class AzureEventHubOptions
 
     public EventHubProducerClient CreateEventHubProducerClient()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return new EventHubProducerClient(ConnectionString, HubName);
-        }
-        else
+        if (UseManagedIdentity)
         {
             var eventHubNamespace = HubName.Split('/')[0];
             var eventHubUri = $"sb://{eventHubNamespace}.servicebus.windows.net/";
             return new EventHubProducerClient(eventHubUri, HubName, new DefaultAzureCredential());
         }
+
+        return new EventHubProducerClient(ConnectionString, HubName);
     }
 
     private BlobContainerClient CreateBlobContainerClient()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return new BlobContainerClient(ConnectionString, StorageContainerName);
-        }
-        else
+        if (UseManagedIdentity)
         {
             var containerUri = new Uri($"https://{StorageContainerName}.blob.core.windows.net");
             return new BlobContainerClient(containerUri, new DefaultAzureCredential());
         }
+
+        return new BlobContainerClient(ConnectionString, StorageContainerName);
     }
 
     public EventProcessorClient CreateEventProcessorClient(string consumerGroup)
     {
         var storageClient = CreateBlobContainerClient();
 
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return new EventProcessorClient(
-                storageClient,
-                consumerGroup,
-                ConnectionString,
-                HubName);
-        }
-        else
+        if (UseManagedIdentity)
         {
             var eventHubsNamespace = HubName.Split('/')[0];
             var fullyQualifiedNamespace = $"{eventHubsNamespace}.servicebus.windows.net";
@@ -78,5 +68,11 @@ public class AzureEventHubOptions
                 HubName,
                 new DefaultAzureCredential());
         }
+
+        return new EventProcessorClient(
+            storageClient,
+            consumerGroup,
+            ConnectionString,
+            HubName);
     }
 }

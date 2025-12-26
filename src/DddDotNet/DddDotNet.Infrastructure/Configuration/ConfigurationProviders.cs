@@ -25,6 +25,8 @@ public class AzureAppConfigurationOptions
 {
     public bool IsEnabled { get; set; }
 
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string Endpoint { get; set; }

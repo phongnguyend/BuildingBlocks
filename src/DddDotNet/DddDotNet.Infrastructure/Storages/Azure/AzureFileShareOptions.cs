@@ -6,6 +6,8 @@ namespace DddDotNet.Infrastructure.Storages.Azure;
 
 public class AzureFileShareOptions
 {
+    public bool UseManagedIdentity { get; set; }
+
     public string ConnectionString { get; set; }
 
     public string ShareName { get; set; }
@@ -14,14 +16,12 @@ public class AzureFileShareOptions
 
     public ShareClient CreateShareClient()
     {
-        if (!string.IsNullOrWhiteSpace(ConnectionString))
-        {
-            return new ShareClient(ConnectionString, ShareName);
-        }
-        else
+        if (UseManagedIdentity)
         {
             var shareUri = new Uri($"https://{ShareName}.file.core.windows.net/{ShareName}");
             return new ShareClient(shareUri, new DefaultAzureCredential());
         }
+
+        return new ShareClient(ConnectionString, ShareName);
     }
 }
