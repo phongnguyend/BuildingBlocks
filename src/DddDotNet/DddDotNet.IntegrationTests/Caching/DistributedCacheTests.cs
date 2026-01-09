@@ -11,28 +11,13 @@ using Xunit;
 
 namespace DddDotNet.IntegrationTests.Caching;
 
-public class CosmosDistributedCacheTests : IDisposable
+public abstract class DistributedCacheTests : IDisposable
 {
-    private readonly IServiceProvider _serviceProvider;
-    private readonly IDistributedCache _distributedCache;
-    private readonly CachingOptions _cachingOptions;
+    protected IServiceProvider _serviceProvider;
+    protected IDistributedCache _distributedCache;
 
-    public CosmosDistributedCacheTests()
+    public DistributedCacheTests()
     {
-        var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json")
-            .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
-            .Build();
-
-        _cachingOptions = new CachingOptions();
-        config.GetSection("Caching").Bind(_cachingOptions);
-
-        var services = new ServiceCollection();
-        services.AddCaches(_cachingOptions);
-        services.AddLogging();
-
-        _serviceProvider = services.BuildServiceProvider();
-        _distributedCache = _serviceProvider.GetRequiredService<IDistributedCache>();
     }
 
     [Fact]
@@ -318,5 +303,49 @@ public class CosmosDistributedCacheTests : IDisposable
         public DateTime CreatedAt { get; set; }
         public bool IsActive { get; set; }
         public string[] Tags { get; set; }
+    }
+}
+
+public class CosmosDistributedCacheTests : DistributedCacheTests, IDisposable
+{
+    public CosmosDistributedCacheTests()
+    {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
+            .Build();
+
+        var cachingOptions = new CachingOptions();
+        config.GetSection("Caching").Bind(cachingOptions);
+
+        var services = new ServiceCollection();
+        services.AddCaches(cachingOptions);
+        services.AddLogging();
+
+        _serviceProvider = services.BuildServiceProvider();
+        _distributedCache = _serviceProvider.GetRequiredService<IDistributedCache>();
+    }
+}
+
+public class RedisDistributedCacheTests : DistributedCacheTests, IDisposable
+{
+    public RedisDistributedCacheTests()
+    {
+        var config = new ConfigurationBuilder()
+            .AddJsonFile("appsettings.json")
+            .AddUserSecrets("09f024f8-e8d1-4b78-9ddd-da941692e8fa")
+            .Build();
+
+        var cachingOptions = new CachingOptions();
+        config.GetSection("Caching").Bind(cachingOptions);
+
+        cachingOptions.Distributed.Provider = "Redis";
+
+        var services = new ServiceCollection();
+        services.AddCaches(cachingOptions);
+        services.AddLogging();
+
+        _serviceProvider = services.BuildServiceProvider();
+        _distributedCache = _serviceProvider.GetRequiredService<IDistributedCache>();
     }
 }

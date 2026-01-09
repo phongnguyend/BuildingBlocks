@@ -1,0 +1,7 @@
+services:
+  redis-stack:
+    image: redis/redis-stack:latest
+    restart: always
+    ports:
+      - "6379:6379" # Redis server port
+      - "8001:8001" # RedisInsight UI port (default for redis-stack)
