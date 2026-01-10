@@ -62,3 +62,12 @@
   | AWS Secrets Manager | ✅ | | [/Configuration](/src/DddDotNet/DddDotNet.Infrastructure/Configuration) |
   | AWS Systems Manager | ✅ | | [/Configuration](/src/DddDotNet/DddDotNet.Infrastructure/Configuration) |
   | Google Cloud Secret Manager | ✅ | | [/Configuration](/src/DddDotNet/DddDotNet.Infrastructure/Configuration) |
+
+## Caching Providers
+  | Caching  | Status | Health Check | Path |
+  | ------------------------ | :----: | :----------: | ---- |
+  | InMemory | ✅ | | [/Caching](/src/DddDotNet/DddDotNet.Infrastructure/Caching) |
+  | Distributed InMemory | ✅ | | [/Caching](/src/DddDotNet/DddDotNet.Infrastructure/Caching) |
+  | Distributed Redis| ✅ | | [/Caching](/src/DddDotNet/DddDotNet.Infrastructure/Caching) |
+  | Distributed SqlServer| ✅ | | [/Caching](/src/DddDotNet/DddDotNet.Infrastructure/Caching) |
+  | Distributed Cosmos | ✅ | | [/Caching](/src/DddDotNet/DddDotNet.Infrastructure/Caching) |
