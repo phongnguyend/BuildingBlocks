@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Version>1.0.0-beta2</Version>
     <PackageProjectUrl>https://github.com/phongnguyend/DddDotNet</PackageProjectUrl>
     <RepositoryUrl>https://github.com/phongnguyend/DddDotNet</RepositoryUrl>
@@ -19,92 +19,92 @@
 
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
-    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.0.0" />
-    <PackageReference Include="Apache.NMS.ActiveMQ" Version="2.1.0" />
-    <PackageReference Include="AWS.Logger.SeriLog" Version="4.0.0" />
-    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.1.13" />
-    <PackageReference Include="AWSSDK.EventBridge" Version="4.0.3.1" />
-    <PackageReference Include="AWSSDK.Extensions.CrtIntegration" Version="4.0.0" />
-    <PackageReference Include="AWSSDK.Kinesis" Version="4.0.2.14" />
-    <PackageReference Include="AWSSDK.S3" Version="4.0.6.2" />
-    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.0.15" />
-    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.0.15" />
-    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.0.15" />
-    <PackageReference Include="AWSSDK.SQS" Version="4.0.0.17" />
-    <PackageReference Include="AWSSDK.SSO" Version="4.0.0.15" />
-    <PackageReference Include="AWSSDK.SSOOIDC" Version="4.0.0.15" />
-    <PackageReference Include="Azure.Communication.Sms" Version="1.0.1" />
-    <PackageReference Include="Azure.Data.AppConfiguration" Version="1.5.0" />
-    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.3.2" />
-    <PackageReference Include="Azure.Identity" Version="1.13.0" />
-    <PackageReference Include="Azure.Messaging.EventGrid" Version="4.27.0" />
-    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.11.5" />
-    <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.11.5" />
-    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.18.2" />
-    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.3.0" />
-    <PackageReference Include="Azure.Storage.Blobs" Version="12.22.2" />
-    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.20.1" />
-    <PackageReference Include="Azure.Storage.Queues" Version="12.20.1" />
-    <PackageReference Include="Castle.Core" Version="5.1.1" />
-    <PackageReference Include="ClosedXML" Version="0.104.1" />
-    <PackageReference Include="Confluent.Kafka" Version="2.6.0" />
-    <PackageReference Include="CryptographyHelper" Version="3.0.0" />
-    <PackageReference Include="CsvHelper" Version="33.0.1" />
-    <PackageReference Include="Dapper.StrongName" Version="2.1.35" />
+    <PackageReference Include="Amazon.Extensions.Configuration.SystemsManager" Version="7.0.1" />
+    <PackageReference Include="Apache.NMS.ActiveMQ" Version="2.2.0" />
+    <PackageReference Include="AWS.Logger.SeriLog" Version="4.0.2" />
+    <PackageReference Include="AWSSDK.CognitoIdentityProvider" Version="4.0.4.12" />
+    <PackageReference Include="AWSSDK.EventBridge" Version="4.0.5.14" />
+    <PackageReference Include="AWSSDK.Extensions.CrtIntegration" Version="4.0.0.22" />
+    <PackageReference Include="AWSSDK.Kinesis" Version="4.0.7.13" />
+    <PackageReference Include="AWSSDK.S3" Version="4.0.17.3" />
+    <PackageReference Include="AWSSDK.SecretsManager" Version="4.0.4.5" />
+    <PackageReference Include="AWSSDK.SimpleEmail" Version="4.0.2.12" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.2.15" />
+    <PackageReference Include="AWSSDK.SQS" Version="4.0.2.13" />
+    <PackageReference Include="AWSSDK.SSO" Version="4.0.2.12" />
+    <PackageReference Include="AWSSDK.SSOOIDC" Version="4.0.3.13" />
+    <PackageReference Include="Azure.Communication.Sms" Version="1.0.2" />
+    <PackageReference Include="Azure.Data.AppConfiguration" Version="1.7.0" />
+    <PackageReference Include="Azure.Extensions.AspNetCore.Configuration.Secrets" Version="1.4.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.1" />
+    <PackageReference Include="Azure.Messaging.EventGrid" Version="5.0.0" />
+    <PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.2" />
+    <PackageReference Include="Azure.Messaging.EventHubs.Processor" Version="5.12.2" />
+    <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.20.1" />
+    <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" Version="1.5.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.27.0" />
+    <PackageReference Include="Azure.Storage.Files.Shares" Version="12.25.0" />
+    <PackageReference Include="Azure.Storage.Queues" Version="12.25.0" />
+    <PackageReference Include="Castle.Core" Version="5.2.1" />
+    <PackageReference Include="ClosedXML" Version="0.105.0" />
+    <PackageReference Include="Confluent.Kafka" Version="2.13.0" />
+    <PackageReference Include="CryptographyHelper" Version="3.1.0" />
+    <PackageReference Include="CsvHelper" Version="33.1.0" />
+    <PackageReference Include="Dapper.StrongName" Version="2.1.66" />
     <PackageReference Include="DinkToPdf" Version="1.0.8" />
-    <PackageReference Include="EPPlus" Version="7.4.1" />
-    <PackageReference Include="ExcelDataReader" Version="3.7.0" />
-    <PackageReference Include="FirebaseAdmin" Version="3.0.1" />
-    <PackageReference Include="FluentFTP" Version="51.1.0" />
-    <PackageReference Include="Google.Cloud.PubSub.V1" Version="3.18.0" />
-    <PackageReference Include="Google.Cloud.SecretManager.V1" Version="2.5.0" />
-    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.10.0" />
-    <PackageReference Include="Google.Protobuf" Version="3.28.2" />
-    <PackageReference Include="Grpc.Net.Client" Version="2.66.0" />
-    <PackageReference Include="HtmlSanitizer" Version="8.1.870" />
-    <PackageReference Include="MailKit" Version="4.13.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="8.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.53.1" />
+    <PackageReference Include="EPPlus" Version="8.4.1" />
+    <PackageReference Include="ExcelDataReader" Version="3.8.0" />
+    <PackageReference Include="FirebaseAdmin" Version="3.4.0" />
+    <PackageReference Include="FluentFTP" Version="53.0.2" />
+    <PackageReference Include="Google.Cloud.PubSub.V1" Version="3.31.0" />
+    <PackageReference Include="Google.Cloud.SecretManager.V1" Version="2.7.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.33.4" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.76.0" />
+    <PackageReference Include="HtmlSanitizer" Version="9.0.889" />
+    <PackageReference Include="MailKit" Version="4.14.1" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.4.0" />
+    <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.57.0" />
     <PackageReference Include="Microsoft.Azure.Management.EventGrid" Version="9.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Cosmos" Version="1.8.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.2.0" />
-    <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="8.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="8.0.1" />
-    <PackageReference Include="Microsoft.Graph" Version="5.61.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0" />
+    <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Graph" Version="5.101.0" />
     <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.4.1" />
-    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.3.8" />
-    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.3.8" />
-    <PackageReference Include="MiniProfiler.Providers.SqlServer" Version="4.3.8" />
-    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.9.0" />
-    <PackageReference Include="OpenTelemetry.Exporter.Zipkin" Version="1.9.0" />
-    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
+    <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.5.4" />
+    <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.5.4" />
+    <PackageReference Include="MiniProfiler.Providers.SqlServer" Version="4.5.4" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.Zipkin" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.15.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.EntityFrameworkCore" Version="1.0.0-beta.3" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.9.0" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.0" />
     <PackageReference Include="OpenTelemetry.Instrumentation.Process" Version="0.5.0-beta.3" />
-    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.9.0" />
-    <PackageReference Include="PuppeteerSharp" Version="20.0.2" />
-    <PackageReference Include="Quartz" Version="3.13.0" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.8.1" />
+    <PackageReference Include="OpenTelemetry.Instrumentation.Runtime" Version="1.15.0" />
+    <PackageReference Include="PuppeteerSharp" Version="20.2.5" />
+    <PackageReference Include="Quartz" Version="3.15.1" />
+    <PackageReference Include="RabbitMQ.Client" Version="7.2.0" />
     <PackageReference Include="RazorLight" Version="2.3.1" />
     <PackageReference Include="SendGrid" Version="9.29.3" />
-    <PackageReference Include="Serilog" Version="4.0.2" />
-    <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+    <PackageReference Include="Serilog" Version="4.3.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
     <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
     <PackageReference Include="Serilog.Exceptions" Version="8.4.0" />
-    <PackageReference Include="SMBLibrary" Version="1.5.3.5" />
-    <PackageReference Include="SSH.NET" Version="2024.1.0" />
+    <PackageReference Include="SMBLibrary" Version="1.5.5.1" />
+    <PackageReference Include="SSH.NET" Version="2025.1.0" />
     <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Twilio" Version="7.5.1" />
+    <PackageReference Include="Twilio" Version="7.14.2" />
     <PackageReference Include="UriHelper" Version="1.0.0" />
     <PackageReference Include="VaultSharp" Version="1.17.5.1" />
   </ItemGroup>

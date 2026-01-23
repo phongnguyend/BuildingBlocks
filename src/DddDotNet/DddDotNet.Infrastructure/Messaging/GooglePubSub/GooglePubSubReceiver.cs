@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.GooglePubSub;
 
-public class GooglePubSubReceiver<T> : IMessageReceiver<T>
+public class GooglePubSubReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
     private readonly GooglePubSubOptions _options;
 

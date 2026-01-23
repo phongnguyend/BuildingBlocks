@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.AmazonSQS;
 
-public class AmazonSqsReceiver<T> : IMessageReceiver<T>
+public class AmazonSqsReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
     private readonly AmazonSqsOptions _options;
 

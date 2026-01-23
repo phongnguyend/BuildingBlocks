@@ -27,8 +27,8 @@ var rabbitMQReceiverOptions = new RabbitMQReceiverOptions()
     RetryIntervals = [10, 30, 50, 80, 130, 210, 340]
 };
 config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
-var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Message>>();
-var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions, logger);
+var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Program, Message>>();
+var rabbitMqReceiver = new RabbitMQReceiver<Program, Message>(rabbitMQReceiverOptions, logger);
 _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"RabbitMQ: {message}");

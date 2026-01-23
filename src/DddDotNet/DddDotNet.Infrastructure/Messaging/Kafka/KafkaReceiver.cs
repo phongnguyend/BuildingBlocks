@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.Kafka;
 
-public class KafkaReceiver<T> : IMessageReceiver<T>, IDisposable
+public class KafkaReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>, IDisposable
 {
     private readonly KafkaReceiverOptions _options;
     private readonly IConsumer<Ignore, string> _consumer;

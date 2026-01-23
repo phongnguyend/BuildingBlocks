@@ -12,7 +12,7 @@ namespace DddDotNet.Infrastructure.Messaging.RabbitMQ;
 public class RabbitMQSender<T> : IMessageSender<T>
 {
     private readonly RabbitMQSenderOptions _options;
-    private readonly IConnectionFactory _connectionFactory;
+    private readonly ConnectionFactory _connectionFactory;
     private readonly string _exchangeName;
     private readonly string _routingKey;
 
@@ -33,40 +33,41 @@ public class RabbitMQSender<T> : IMessageSender<T>
 
     public async Task SendAsync(T message, MetaData metaData = null, CancellationToken cancellationToken = default)
     {
-        await Task.Run(() =>
+        using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+        using var channel = await connection.CreateChannelAsync(cancellationToken: cancellationToken);
+        var body = new Message<T>
         {
-            using var connection = _connectionFactory.CreateConnection();
-            using var channel = connection.CreateModel();
-            var body = new Message<T>
+            Data = message,
+            MetaData = metaData,
+        }.GetBytes();
+
+        var properties = new BasicProperties
+        {
+            Persistent = true
+        };
+
+        if (_options.MessageEncryptionEnabled)
+        {
+            var iv = SymmetricCrypto.GenerateKey(16);
+
+            body = body.UseAES(_options.MessageEncryptionKey.FromBase64String())
+            .WithCipher(CipherMode.CBC)
+            .WithIV(iv)
+            .WithPadding(PaddingMode.PKCS7)
+            .Encrypt();
+
+            properties.Headers = new Dictionary<string, object>
             {
-                Data = message,
-                MetaData = metaData,
-            }.GetBytes();
+                { "x-encrypted", true },
+                { "x-encrypted-iv", iv.ToBase64String() }
+            };
+        }
 
-            var properties = channel.CreateBasicProperties();
-            properties.Persistent = true;
-
-            if (_options.MessageEncryptionEnabled)
-            {
-                var iv = SymmetricCrypto.GenerateKey(16);
-
-                body = body.UseAES(_options.MessageEncryptionKey.FromBase64String())
-                .WithCipher(CipherMode.CBC)
-                .WithIV(iv)
-                .WithPadding(PaddingMode.PKCS7)
-                .Encrypt();
-
-                properties.Headers = new Dictionary<string, object>
-                {
-                    { "x-encrypted", true },
-                    { "x-encrypted-iv", iv.ToBase64String() }
-                };
-            }
-
-            channel.BasicPublish(exchange: _exchangeName,
-                                 routingKey: _routingKey,
-                                 basicProperties: properties,
-                                 body: body);
-        }, cancellationToken);
+        await channel.BasicPublishAsync(exchange: _exchangeName,
+                               routingKey: _routingKey,
+                               mandatory: true,
+                               basicProperties: properties,
+                               body: body,
+                               cancellationToken: cancellationToken);
     }
 }

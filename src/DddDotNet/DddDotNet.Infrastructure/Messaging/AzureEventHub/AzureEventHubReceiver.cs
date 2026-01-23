@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.AzureEventHub;
 
-public class AzureEventHubReceiver<T> : IMessageReceiver<T>, IDisposable
+public class AzureEventHubReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>, IDisposable
 {
     private readonly AzureEventHubOptions _options;
 

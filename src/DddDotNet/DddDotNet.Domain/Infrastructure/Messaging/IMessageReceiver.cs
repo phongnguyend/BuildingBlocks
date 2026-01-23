@@ -4,9 +4,9 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Domain.Infrastructure.Messaging;
 
-public interface IMessageReceiver<T>
+public interface IMessageReceiver<TConsumer, T>
 {
-    Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default);
+    Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken);
 }
 
 public class ConsumerHandledException : Exception

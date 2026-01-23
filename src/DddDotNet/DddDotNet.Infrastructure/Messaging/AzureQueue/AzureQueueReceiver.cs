@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
 
-public class AzureQueueReceiver<T> : IMessageReceiver<T>
+public class AzureQueueReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
     private readonly AzureQueueOptions _options;
 

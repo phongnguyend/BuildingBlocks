@@ -39,7 +39,7 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAzureEventHubReceiver<T>(this IServiceCollection services, AzureEventHubsOptions options)
+    public static IServiceCollection AddAzureEventHubReceiver<TConsumer, T>(this IServiceCollection services, AzureEventHubsOptions options)
     {
         var hubOptions = new AzureEventHubOptions
         {
@@ -48,7 +48,7 @@ public static class MessagingCollectionExtensions
             StorageConnectionString = options.StorageConnectionString,
             StorageContainerName = options.StorageContainerNames != null && options.StorageContainerNames.ContainsKey(typeof(T).Name) ? options.StorageContainerNames[typeof(T).Name] : null
         };
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureEventHubReceiver<T>(hubOptions));
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new AzureEventHubReceiver<TConsumer, T>(hubOptions));
         return services;
     }
 
@@ -64,7 +64,7 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAzureQueueReceiver<T>(this IServiceCollection services, AzureQueuesOptions options)
+    public static IServiceCollection AddAzureQueueReceiver<TConsumer, T>(this IServiceCollection services, AzureQueuesOptions options)
     {
         var queueOptions = new AzureQueueOptions
         {
@@ -72,7 +72,7 @@ public static class MessagingCollectionExtensions
             QueueName = options.QueueNames[typeof(T).Name],
             QueueClientOptions = options.QueueClientOptions
         };
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureQueueReceiver<T>(queueOptions));
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new AzureQueueReceiver<TConsumer, T>(queueOptions));
         return services;
     }
 
@@ -88,7 +88,7 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddAzureServiceBusQueueReceiver<T>(this IServiceCollection services, AzureServiceBusOptions options)
+    public static IServiceCollection AddAzureServiceBusQueueReceiver<TConsumer, T>(this IServiceCollection services, AzureServiceBusOptions options)
     {
         var queueOptions = new AzureServiceBusQueueOptions
         {
@@ -96,7 +96,7 @@ public static class MessagingCollectionExtensions
             Namespace = options.Namespace,
             QueueName = options.QueueNames[typeof(T).Name]
         };
-        services.AddTransient<IMessageReceiver<T>>(x => new AzureServiceBusQueueReceiver<T>(queueOptions));
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new AzureServiceBusQueueReceiver<TConsumer, T>(queueOptions));
         return services;
     }
 
@@ -106,9 +106,9 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddFakeReceiver<T>(this IServiceCollection services)
+    public static IServiceCollection AddFakeReceiver<TConsumer, T>(this IServiceCollection services)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new FakeReceiver<T>());
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new FakeReceiver<TConsumer, T>());
         return services;
     }
 
@@ -118,9 +118,9 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddKafkaReceiver<T>(this IServiceCollection services, KafkaOptions options)
+    public static IServiceCollection AddKafkaReceiver<TConsumer, T>(this IServiceCollection services, KafkaOptions options)
     {
-        services.AddTransient<IMessageReceiver<T>>(x => new KafkaReceiver<T>(new KafkaReceiverOptions
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new KafkaReceiver<TConsumer, T>(new KafkaReceiverOptions
         {
             BootstrapServers = options.BootstrapServers,
             Topic = options.Topics[typeof(T).Name],
@@ -144,7 +144,7 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddRabbitMQReceiver<T>(this IServiceCollection services, RabbitMQOptions options)
+    public static IServiceCollection AddRabbitMQReceiver<TConsumer, T>(this IServiceCollection services, RabbitMQOptions options)
     {
         var receiverOptions = new RabbitMQReceiverOptions
         {
@@ -153,11 +153,15 @@ public static class MessagingCollectionExtensions
             Password = options.Password,
             ExchangeName = options.ExchangeName,
             RoutingKey = options.RoutingKeys[typeof(T).Name],
-            QueueName = options.QueueNames[typeof(T).Name],
+            QueueName = options.Consumers[typeof(TConsumer).Name][typeof(T).Name],
             AutomaticCreateEnabled = true,
-            MessageEncryptionKey = options.MessageEncryptionKey
+            MessageEncryptionKey = options.MessageEncryptionKey,
+            MaxRetryCount = options.GetMaxRetryCount(typeof(TConsumer).Name),
+            RetryIntervals = options.GetRetryIntervals(typeof(TConsumer).Name),
+            DeadLetterEnabled = options.GetDeadLetterEnabled(typeof(TConsumer).Name)
         };
-        services.AddTransient<IMessageReceiver<T>>(x => new RabbitMQReceiver<T>(receiverOptions, x.GetRequiredService<ILogger<RabbitMQReceiver<T>>>()));
+
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new RabbitMQReceiver<TConsumer, T>(receiverOptions, x.GetRequiredService<ILogger<RabbitMQReceiver<TConsumer, T>>>()));
         return services;
     }
 
@@ -195,31 +199,31 @@ public static class MessagingCollectionExtensions
         return services;
     }
 
-    public static IServiceCollection AddMessageBusReceiver<T>(this IServiceCollection services, MessagingOptions options)
+    public static IServiceCollection AddMessageBusReceiver<TConsumer, T>(this IServiceCollection services, MessagingOptions options)
     {
         if (options.UsedRabbitMQ())
         {
-            services.AddRabbitMQReceiver<T>(options.RabbitMQ);
+            services.AddRabbitMQReceiver<TConsumer, T>(options.RabbitMQ);
         }
         else if (options.UsedKafka())
         {
-            services.AddKafkaReceiver<T>(options.Kafka);
+            services.AddKafkaReceiver<TConsumer, T>(options.Kafka);
         }
         else if (options.UsedAzureQueue())
         {
-            services.AddAzureQueueReceiver<T>(options.AzureQueue);
+            services.AddAzureQueueReceiver<TConsumer, T>(options.AzureQueue);
         }
         else if (options.UsedAzureServiceBus())
         {
-            services.AddAzureServiceBusQueueReceiver<T>(options.AzureServiceBus);
+            services.AddAzureServiceBusQueueReceiver<TConsumer, T>(options.AzureServiceBus);
         }
         else if (options.UsedAzureEventHub())
         {
-            services.AddAzureEventHubReceiver<T>(options.AzureEventHub);
+            services.AddAzureEventHubReceiver<TConsumer, T>(options.AzureEventHub);
         }
         else if (options.UsedFake())
         {
-            services.AddFakeReceiver<T>();
+            services.AddFakeReceiver<TConsumer, T>();
         }
 
         return services;

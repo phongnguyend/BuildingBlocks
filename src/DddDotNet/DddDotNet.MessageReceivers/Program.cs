@@ -29,7 +29,7 @@ var config = new ConfigurationBuilder()
 
 var amazonSqsOptions = new AmazonSqsOptions();
 config.GetSection("Messaging:AmazonSQS").Bind(amazonSqsOptions);
-var amazonSqs = new AmazonSqsReceiver<Message>(amazonSqsOptions);
+var amazonSqs = new AmazonSqsReceiver<Program, Message>(amazonSqsOptions);
 _ = amazonSqs.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AmazonSqs: {message}");
@@ -38,7 +38,7 @@ _ = amazonSqs.ReceiveAsync(async (message, metaData, cancellationToken) =>
 
 var apacheActiveMqOptions = new ApacheActiveMQOptions();
 config.GetSection("Messaging:ApacheActiveMQ").Bind(apacheActiveMqOptions);
-var apacheActiveMq = new ApacheActiveMQReceiver<Message>(apacheActiveMqOptions);
+var apacheActiveMq = new ApacheActiveMQReceiver<Program, Message>(apacheActiveMqOptions);
 _ = apacheActiveMq.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"ApacheActiveMQ: {message}");
@@ -50,7 +50,7 @@ var azureQueueOptions = new AzureQueueOptions
     ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
     QueueName = "integration-test"
 };
-var azureQueue = new AzureQueueReceiver<Message>(azureQueueOptions);
+var azureQueue = new AzureQueueReceiver<Program, Message>(azureQueueOptions);
 _ = azureQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureQueue: {message}");
@@ -62,7 +62,7 @@ var azureServiceBusQueueOptions = new AzureServiceBusQueueOptions
     ConnectionString = config["Messaging:AzureServiceBus:ConnectionString"],
     QueueName = "integration-test"
 };
-var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(azureServiceBusQueueOptions);
+var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Program, Message>(azureServiceBusQueueOptions);
 _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureServiceBus: {message}");
@@ -75,7 +75,7 @@ var azureServiceBusSubscriptionOptions = new AzureServiceBusSubscriptionOptions
     Topic = "topic-integration-test",
     Subscription = "sub-integration-test"
 };
-var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(azureServiceBusSubscriptionOptions);
+var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Program, Message>(azureServiceBusSubscriptionOptions);
 _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureServiceBusSubscription: {message}");
@@ -89,7 +89,7 @@ var azureEventHubOptions = new AzureEventHubOptions
     StorageConnectionString = config["Messaging:AzureEventHub:StorageConnectionString"],
     StorageContainerName = "eventhub-integration-test"
 };
-var azureEventHub = new AzureEventHubReceiver<Message>(azureEventHubOptions);
+var azureEventHub = new AzureEventHubReceiver<Program, Message>(azureEventHubOptions);
 _ = azureEventHub.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureEventHub: {message}");
@@ -105,7 +105,7 @@ var azureQueueEventGridOptions = new AzureQueueOptions
         MessageEncoding = QueueMessageEncoding.Base64
     }
 };
-var azureQueueEventGrid = new AzureQueueReceiver<EventGridEvent>(azureQueueEventGridOptions);
+var azureQueueEventGrid = new AzureQueueReceiver<Program, EventGridEvent>(azureQueueEventGridOptions);
 _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>
 {
     try
@@ -123,7 +123,7 @@ _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>
 
 var googlePubSubOptions = new GooglePubSubOptions();
 config.GetSection("Messaging:GooglePubSub").Bind(googlePubSubOptions);
-var googlePubSub = new GooglePubSubReceiver<Message>(googlePubSubOptions);
+var googlePubSub = new GooglePubSubReceiver<Program, Message>(googlePubSubOptions);
 _ = googlePubSub.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"GooglePubSub: {message}");
@@ -140,8 +140,8 @@ var rabbitMQReceiverOptions = new RabbitMQReceiverOptions()
     RetryIntervals = [10, 30, 50, 80, 130, 210, 340]
 };
 config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
-var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Message>>();
-var rabbitMqReceiver = new RabbitMQReceiver<Message>(rabbitMQReceiverOptions, logger);
+var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Program, Message>>();
+var rabbitMqReceiver = new RabbitMQReceiver<Program, Message>(rabbitMQReceiverOptions, logger);
 _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"RabbitMQ: {message}");
@@ -150,7 +150,7 @@ _ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =
     await Task.CompletedTask;
 });
 
-var kafka = new KafkaReceiver<Message>(new KafkaReceiverOptions
+var kafka = new KafkaReceiver<Program, Message>(new KafkaReceiverOptions
 {
     BootstrapServers = "localhost:9092",
     Topic = "ddddotnet",

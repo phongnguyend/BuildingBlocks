@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
 
-public class ApacheActiveMQReceiver<T> : IMessageReceiver<T>
+public class ApacheActiveMQReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
     private readonly ApacheActiveMQOptions _options;
 

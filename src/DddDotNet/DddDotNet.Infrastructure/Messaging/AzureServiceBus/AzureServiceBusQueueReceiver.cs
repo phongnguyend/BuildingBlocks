@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 
-public class AzureServiceBusQueueReceiver<T> : IMessageReceiver<T>
+public class AzureServiceBusQueueReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
     private readonly AzureServiceBusQueueOptions _options;
 

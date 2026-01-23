@@ -26,7 +26,7 @@ var azureServiceBusQueueOptions = new AzureServiceBusQueueOptions
     QueueName = "integration-test"
 };
 
-var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Message>(azureServiceBusQueueOptions);
+var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Program, Message>(azureServiceBusQueueOptions);
 _ = azureServiceBusQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureServiceBus: {message}");
@@ -40,7 +40,7 @@ var azureServiceBusSubscriptionOptions = new AzureServiceBusSubscriptionOptions
     Subscription = "sub-integration-test"
 };
 
-var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Message>(azureServiceBusSubscriptionOptions);
+var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Program, Message>(azureServiceBusSubscriptionOptions);
 _ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"AzureServiceBusSubscription: {message}");
