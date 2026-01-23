@@ -275,8 +275,9 @@ public static class MessagingCollectionExtensions
                     Namespace = options.AzureServiceBus.Namespace,
                     QueueName = queueName.Value
                 };
-                healthChecksBuilder.AddAzureServiceBusQueue(
-                    queueOptions,
+                healthChecksBuilder.AddAzureServiceBus(
+                    options.AzureServiceBus.Namespace,
+                    [5672],
                     name: $"Message Broker (Azure Service Bus) {queueName.Key}",
                     failureStatus: HealthStatus.Degraded);
             }

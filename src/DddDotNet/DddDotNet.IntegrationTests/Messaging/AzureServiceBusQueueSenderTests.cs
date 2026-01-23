@@ -2,7 +2,6 @@
 using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,6 +10,7 @@ namespace DddDotNet.IntegrationTests.Messaging;
 public class AzureServiceBusQueueSenderTests
 {
     private static string _connectionString;
+    private static string _namespace;
 
     public AzureServiceBusQueueSenderTests()
     {
@@ -20,6 +20,7 @@ public class AzureServiceBusQueueSenderTests
             .Build();
 
         _connectionString = config["Messaging:AzureServiceBus:ConnectionString"];
+        _namespace = config["Messaging:AzureServiceBus:Namespace"];
     }
 
     [Fact]
@@ -42,12 +43,7 @@ public class AzureServiceBusQueueSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var queueOptions = new AzureServiceBusQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = "integration-test"
-        };
-        var healthCheck = new AzureServiceBusQueueHealthCheck(queueOptions);
+        var healthCheck = new AzureServiceBusHealthCheck(_namespace, [5672]);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -55,12 +51,7 @@ public class AzureServiceBusQueueSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var queueOptions = new AzureServiceBusQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = Guid.NewGuid().ToString()
-        };
-        var healthCheck = new AzureServiceBusQueueHealthCheck(queueOptions);
+        var healthCheck = new AzureServiceBusHealthCheck("", [5672]);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

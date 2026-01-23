@@ -115,9 +115,9 @@ public static class HealthCheckBuilderExtensions
             timeout));
     }
 
-    public static IHealthChecksBuilder AddAzureServiceBusQueue(
+    public static IHealthChecksBuilder AddAzureServiceBus(
         this IHealthChecksBuilder builder,
-        AzureServiceBusQueueOptions options,
+        string @namespace, IReadOnlyCollection<int> ports,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -125,39 +125,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureServiceBusQueueHealthCheck(options),
-            failureStatus,
-            tags,
-            timeout));
-    }
-
-    public static IHealthChecksBuilder AddAzureServiceBusTopic(
-        this IHealthChecksBuilder builder,
-        AzureServiceBusTopicOptions options,
-        string name = default,
-        HealthStatus? failureStatus = default,
-        IEnumerable<string> tags = default,
-        TimeSpan? timeout = default)
-    {
-        return builder.Add(new HealthCheckRegistration(
-            name,
-            new AzureServiceBusTopicHealthCheck(options),
-            failureStatus,
-            tags,
-            timeout));
-    }
-
-    public static IHealthChecksBuilder AddAzureServiceBusSubscription(
-        this IHealthChecksBuilder builder,
-        AzureServiceBusSubscriptionOptions options,
-        string name = default,
-        HealthStatus? failureStatus = default,
-        IEnumerable<string> tags = default,
-        TimeSpan? timeout = default)
-    {
-        return builder.Add(new HealthCheckRegistration(
-            name,
-            new AzureServiceBusSubscriptionHealthCheck(options),
+            new AzureServiceBusHealthCheck(@namespace, ports),
             failureStatus,
             tags,
             timeout));
