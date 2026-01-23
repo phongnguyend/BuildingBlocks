@@ -8,7 +8,7 @@ public class Message
     {
         return new Message
         {
-            Id = Guid.NewGuid(),
+            Id = Guid.CreateVersion7(),
             Text1 = "This is Text1",
             Text2 = "This is Text2",
             DateTime1 = DateTime.MinValue,
