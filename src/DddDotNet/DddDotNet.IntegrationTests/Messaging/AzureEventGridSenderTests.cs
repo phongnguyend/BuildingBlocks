@@ -2,6 +2,7 @@
 using DddDotNet.Infrastructure.Messaging.AzureEventGrid;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -11,7 +12,6 @@ public class AzureEventGridSenderTests
 {
     private static string _domainEndpoint;
     private static string _domainKey;
-    AzureEventGridHealthCheckOptions _healthCheckOptions;
 
     public AzureEventGridSenderTests()
     {
@@ -22,13 +22,6 @@ public class AzureEventGridSenderTests
 
         _domainEndpoint = config["Messaging:AzureEventGrid:DomainEndpoint"];
         _domainKey = config["Messaging:AzureEventGrid:DomainKey"];
-
-        _healthCheckOptions = new AzureEventGridHealthCheckOptions
-        {
-            DomainEndpoint = _domainEndpoint,
-        };
-
-        config.GetSection("Messaging:AzureEventGrid:HealthCheck").Bind(_healthCheckOptions);
     }
 
     [Fact]
@@ -52,7 +45,7 @@ public class AzureEventGridSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AzureEventGridHealthCheck(_healthCheckOptions);
+        var healthCheck = new AzureEventGridHealthCheck(_domainEndpoint);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -60,8 +53,7 @@ public class AzureEventGridSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _healthCheckOptions.DomainName += "abc";
-        var healthCheck = new AzureEventGridHealthCheck(_healthCheckOptions);
+        var healthCheck = new AzureEventGridHealthCheck($"https://{Guid.NewGuid()}.{Guid.NewGuid()}.eventgrid.azure.net/api/events");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

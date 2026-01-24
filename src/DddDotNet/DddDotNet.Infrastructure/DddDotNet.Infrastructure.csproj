@@ -69,15 +69,12 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Protocols.MessagePack" Version="10.0.2" />
     <PackageReference Include="Microsoft.Azure.AppConfiguration.AspNetCore" Version="8.4.0" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.57.0" />
-    <PackageReference Include="Microsoft.Azure.Management.EventGrid" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Caching.Cosmos" Version="1.8.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="2.3.0" />
     <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="10.0.2" />
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="10.0.2" />
-    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="10.0.2" />
     <PackageReference Include="Microsoft.Graph" Version="5.101.0" />
-    <PackageReference Include="Microsoft.Rest.ClientRuntime.Azure.Authentication" Version="2.4.1" />
     <PackageReference Include="MiniProfiler.AspNetCore.Mvc" Version="4.5.4" />
     <PackageReference Include="MiniProfiler.EntityFrameworkCore" Version="4.5.4" />
     <PackageReference Include="MiniProfiler.Providers.SqlServer" Version="4.5.4" />
