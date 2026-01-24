@@ -2,6 +2,7 @@
 using DddDotNet.Infrastructure.Messaging.AzureEventHub;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using System;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -41,12 +42,7 @@ public class AzureEventHubSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var hubOptions = new AzureEventHubOptions
-        {
-            ConnectionString = _connectionString,
-            HubName = "integration-test"
-        };
-        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
+        var healthCheck = new AzureEventHubHealthCheck("DddDotNetEventHubIntegrationTest.servicebus.windows.net", [443, 5672]);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -54,12 +50,7 @@ public class AzureEventHubSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var hubOptions = new AzureEventHubOptions
-        {
-            ConnectionString = _connectionString,
-            HubName = "integration-test-not-exist"
-        };
-        var healthCheck = new AzureEventHubHealthCheck(hubOptions);
+        var healthCheck = new AzureEventHubHealthCheck($"{Guid.NewGuid()}.servicebus.windows.net", [443, 5672]);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

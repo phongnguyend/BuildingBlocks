@@ -101,7 +101,7 @@ public static class HealthCheckBuilderExtensions
 
     public static IHealthChecksBuilder AddAzureQueueStorage(
         this IHealthChecksBuilder builder,
-        AzureQueueOptions options,
+        string queueUrl,
         string name = default,
         HealthStatus? failureStatus = default,
         IEnumerable<string> tags = default,
@@ -109,7 +109,7 @@ public static class HealthCheckBuilderExtensions
     {
         return builder.Add(new HealthCheckRegistration(
             name,
-            new AzureQueueStorageHealthCheck(options),
+            new AzureQueueStorageHealthCheck(queueUrl),
             failureStatus,
             tags,
             timeout));

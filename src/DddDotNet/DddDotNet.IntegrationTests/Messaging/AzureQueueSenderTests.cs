@@ -42,12 +42,7 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var queueOptions = new AzureQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = "integration-test"
-        };
-        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
+        var healthCheck = new AzureQueueStorageHealthCheck($"https://ddddotnetintegrationtest.queue.core.windows.net");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -55,12 +50,7 @@ public class AzureQueueSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        var queueOptions = new AzureQueueOptions
-        {
-            ConnectionString = _connectionString,
-            QueueName = Guid.NewGuid().ToString()
-        };
-        var healthCheck = new AzureQueueStorageHealthCheck(queueOptions);
+        var healthCheck = new AzureQueueStorageHealthCheck($"https://{Guid.NewGuid()}.queue.core.windows.net");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

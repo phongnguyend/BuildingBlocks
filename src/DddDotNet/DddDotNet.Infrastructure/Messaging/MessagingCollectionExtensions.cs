@@ -255,36 +255,18 @@ public static class MessagingCollectionExtensions
         }
         else if (options.UsedAzureQueue())
         {
-            foreach (var queueName in options.AzureQueue.QueueNames)
-            {
-                var queueOptions = new AzureQueueOptions
-                {
-                    ConnectionString = options.AzureQueue.ConnectionString,
-                    QueueName = queueName.Value,
-                    QueueClientOptions = options.AzureQueue.QueueClientOptions
-                };
-                healthChecksBuilder.AddAzureQueueStorage(
-                    queueOptions,
-                    name: $"Message Broker (Azure Queue) {queueName.Key}",
-                    failureStatus: HealthStatus.Degraded);
-            }
+            healthChecksBuilder.AddAzureQueueStorage(
+                $"https://{options.AzureQueue.AccountName}.queue.core.windows.net",
+                name: $"Message Broker (Azure Queue Storage) {options.AzureQueue.AccountName}",
+                failureStatus: HealthStatus.Degraded);
         }
         else if (options.UsedAzureServiceBus())
         {
-            foreach (var queueName in options.AzureServiceBus.QueueNames)
-            {
-                var queueOptions = new AzureServiceBusQueueOptions
-                {
-                    ConnectionString = options.AzureServiceBus.ConnectionString,
-                    Namespace = options.AzureServiceBus.Namespace,
-                    QueueName = queueName.Value
-                };
-                healthChecksBuilder.AddAzureServiceBus(
-                    options.AzureServiceBus.Namespace,
-                    [5672],
-                    name: $"Message Broker (Azure Service Bus) {queueName.Key}",
-                    failureStatus: HealthStatus.Degraded);
-            }
+            healthChecksBuilder.AddAzureServiceBus(
+                options.AzureServiceBus.Namespace,
+                [5672],
+                name: $"Message Broker (Azure Service Bus) {options.AzureServiceBus.Namespace}",
+                failureStatus: HealthStatus.Degraded);
         }
         else if (options.UsedAzureEventGrid())
         {

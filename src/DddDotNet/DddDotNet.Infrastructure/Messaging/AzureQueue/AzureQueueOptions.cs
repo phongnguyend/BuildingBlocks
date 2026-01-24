@@ -9,6 +9,8 @@ public class AzureQueuesOptions
 {
     public string ConnectionString { get; set; }
 
+    public string AccountName { get; set; }
+
     public Dictionary<string, string> QueueNames { get; set; }
 
     public QueueClientOptions QueueClientOptions { get; set; }
@@ -20,6 +22,8 @@ public class AzureQueueOptions
 
     public string ConnectionString { get; set; }
 
+    public string AccountName { get; set; }
+
     public string QueueName { get; set; }
 
     public QueueClientOptions QueueClientOptions { get; set; }
@@ -30,7 +34,7 @@ public class AzureQueueOptions
 
         if (UseManagedIdentity)
         {
-            var queueUri = new Uri($"https://{QueueName}.queue.core.windows.net/{QueueName}");
+            var queueUri = new Uri($"https://{AccountName}.queue.core.windows.net/{QueueName}");
             return options == null ?
                 new QueueClient(queueUri, new DefaultAzureCredential()) :
                 new QueueClient(queueUri, new DefaultAzureCredential(), options);
