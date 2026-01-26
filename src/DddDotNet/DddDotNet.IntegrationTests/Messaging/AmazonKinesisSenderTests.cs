@@ -38,7 +38,7 @@ public class AmazonKinesisSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AmazonKinesisHealthCheck(_options);
+        var healthCheck = new AmazonKinesisHealthCheck("kinesis.ap-southeast-1.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,8 +46,7 @@ public class AmazonKinesisSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.StreamName += "abc";
-        var healthCheck = new AmazonKinesisHealthCheck(_options);
+        var healthCheck = new AmazonKinesisHealthCheck("kinesis.ap-southeast-xxx.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

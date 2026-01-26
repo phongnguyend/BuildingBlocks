@@ -38,7 +38,7 @@ public class AmazonSnsSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AmazonSnsHealthCheck(_options);
+        var healthCheck = new AmazonSnsHealthCheck("sns.ap-southeast-1.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,8 +46,7 @@ public class AmazonSnsSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.TopicARN += "abc";
-        var healthCheck = new AmazonSnsHealthCheck(_options);
+        var healthCheck = new AmazonSnsHealthCheck("sns.ap-southeast-xxx.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

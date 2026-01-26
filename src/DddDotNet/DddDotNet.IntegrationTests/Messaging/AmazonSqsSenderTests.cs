@@ -38,7 +38,7 @@ public class AmazonSqsSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        var healthCheck = new AmazonSqsHealthCheck(_options);
+        var healthCheck = new AmazonSqsHealthCheck(_options.QueueUrl);
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -46,8 +46,7 @@ public class AmazonSqsSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.QueueUrl += "abc";
-        var healthCheck = new AmazonSqsHealthCheck(_options);
+        var healthCheck = new AmazonSqsHealthCheck("https://sqs.ap-southeast-xxx.amazonaws.com/xxx/xxx");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }

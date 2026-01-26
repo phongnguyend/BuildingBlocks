@@ -38,8 +38,7 @@ public class AmazonEventBridgeSenderTests
     [Fact]
     public async Task HealthCheck_Healthy()
     {
-        _options.EndpointName = "ddddotnet";
-        var healthCheck = new AmazonEventBridgeHealthCheck(_options);
+        var healthCheck = new AmazonEventBridgeHealthCheck("events.ap-southeast-1.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Healthy, checkResult.Status);
     }
@@ -47,8 +46,7 @@ public class AmazonEventBridgeSenderTests
     [Fact]
     public async Task HealthCheck_Degraded()
     {
-        _options.EndpointName = "xxx";
-        var healthCheck = new AmazonEventBridgeHealthCheck(_options);
+        var healthCheck = new AmazonEventBridgeHealthCheck("events.ap-southeast-xxx.amazonaws.com");
         var checkResult = await healthCheck.CheckHealthAsync(new HealthCheckContext { Registration = new HealthCheckRegistration("Test", (x) => null, HealthStatus.Degraded, new string[] { }) });
         Assert.Equal(HealthStatus.Degraded, checkResult.Status);
     }
