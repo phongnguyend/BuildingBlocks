@@ -31,6 +31,7 @@ public class AzureEventHubReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T
                 var messageAsString = Encoding.UTF8.GetString(eventArgs.Data.EventBody);
                 var message = JsonSerializer.Deserialize<Message<T>>(messageAsString);
                 await action(message.Data, message.MetaData, cancellationToken);
+                await eventArgs.UpdateCheckpointAsync(cancellationToken);
             }
             catch (Exception ex)
             {

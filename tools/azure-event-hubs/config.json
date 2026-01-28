@@ -3,7 +3,7 @@
         "NamespaceConfig": [
         {
             "Type": "EventHub",
-            "Name": "DddDotNetEventHubIntegrationTest",
+            "Name": "emulatorNs1",
             "Entities": [
             {
                 "Name": "integration-test",

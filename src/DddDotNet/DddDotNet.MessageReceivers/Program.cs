@@ -2,12 +2,9 @@
 using Azure.Storage.Queues;
 using DddDotNet.Infrastructure.Messaging.AmazonSQS;
 using DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
-using DddDotNet.Infrastructure.Messaging.AzureEventHub;
 using DddDotNet.Infrastructure.Messaging.AzureQueue;
-using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 using DddDotNet.Infrastructure.Messaging.GooglePubSub;
 using DddDotNet.Infrastructure.Messaging.Kafka;
-using DddDotNet.Infrastructure.Messaging.RabbitMQ;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -57,45 +54,6 @@ _ = azureQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
     await Task.CompletedTask;
 });
 
-var azureServiceBusQueueOptions = new AzureServiceBusQueueOptions
-{
-    ConnectionString = config["Messaging:AzureServiceBus:ConnectionString"],
-    QueueName = "integration-test"
-};
-var azureServiceBusQueue = new AzureServiceBusQueueReceiver<Program, Message>(azureServiceBusQueueOptions);
-_ = azureServiceBusQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"AzureServiceBus: {message}");
-    await Task.CompletedTask;
-});
-
-var azureServiceBusSubscriptionOptions = new AzureServiceBusSubscriptionOptions
-{
-    ConnectionString = config["Messaging:AzureServiceBus:ConnectionString"],
-    Topic = "topic-integration-test",
-    Subscription = "sub-integration-test"
-};
-var azureServiceBusSubscription = new AzureServiceBusSubscriptionReceiver<Program, Message>(azureServiceBusSubscriptionOptions);
-_ = azureServiceBusSubscription.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"AzureServiceBusSubscription: {message}");
-    await Task.CompletedTask;
-});
-
-var azureEventHubOptions = new AzureEventHubOptions
-{
-    ConnectionString = config["Messaging:AzureEventHub:ConnectionString"],
-    HubName = "integration-test",
-    StorageConnectionString = config["Messaging:AzureEventHub:StorageConnectionString"],
-    StorageContainerName = "eventhub-integration-test"
-};
-var azureEventHub = new AzureEventHubReceiver<Program, Message>(azureEventHubOptions);
-_ = azureEventHub.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"AzureEventHub: {message}");
-    await Task.CompletedTask;
-});
-
 var azureQueueEventGridOptions = new AzureQueueOptions
 {
     ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
@@ -127,26 +85,6 @@ var googlePubSub = new GooglePubSubReceiver<Program, Message>(googlePubSubOption
 _ = googlePubSub.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"GooglePubSub: {message}");
-    await Task.CompletedTask;
-});
-
-var rabbitMQReceiverOptions = new RabbitMQReceiverOptions()
-{
-    AutomaticCreateEnabled = true,
-    QueueType = "quorum",
-    MessageEncryptionKey = "KEhv7V8VedlhVlNr5vQstLk99l5uflYGB5lamGZd4R4=",
-    DeadLetterEnabled = true,
-    MaxRetryCount = 3,
-    RetryIntervals = [10, 30, 50, 80, 130, 210, 340]
-};
-config.GetSection("Messaging:RabbitMQ").Bind(rabbitMQReceiverOptions);
-var logger = loggerFactory.CreateLogger<RabbitMQReceiver<Program, Message>>();
-var rabbitMqReceiver = new RabbitMQReceiver<Program, Message>(rabbitMQReceiverOptions, logger);
-_ = rabbitMqReceiver.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"RabbitMQ: {message}");
-    //throw new Exception("Test exception");
-    //throw new ConsumerHandledException { NextAction = ConsumerHandledExceptionNextAction.Retry };
     await Task.CompletedTask;
 });
 

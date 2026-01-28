@@ -50,7 +50,7 @@ public class AzureEventHubOptions
             return new BlobContainerClient(containerUri, new DefaultAzureCredential());
         }
 
-        return new BlobContainerClient(ConnectionString, StorageContainerName);
+        return new BlobContainerClient(StorageConnectionString, StorageContainerName);
     }
 
     public EventProcessorClient CreateEventProcessorClient(string consumerGroup)
