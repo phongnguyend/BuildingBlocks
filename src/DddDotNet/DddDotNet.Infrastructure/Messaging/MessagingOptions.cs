@@ -1,6 +1,6 @@
 ﻿using DddDotNet.Infrastructure.Messaging.AzureEventGrid;
 using DddDotNet.Infrastructure.Messaging.AzureEventHub;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 using DddDotNet.Infrastructure.Messaging.Kafka;
 using DddDotNet.Infrastructure.Messaging.RabbitMQ;

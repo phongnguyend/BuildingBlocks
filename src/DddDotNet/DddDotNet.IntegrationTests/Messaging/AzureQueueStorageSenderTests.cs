@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Domain.Infrastructure.Messaging;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using System;
@@ -8,11 +8,11 @@ using Xunit;
 
 namespace DddDotNet.IntegrationTests.Messaging;
 
-public class AzureQueueSenderTests
+public class AzureQueueStorageSenderTests
 {
     private static string _connectionString;
 
-    public AzureQueueSenderTests()
+    public AzureQueueStorageSenderTests()
     {
         var config = new ConfigurationBuilder()
             .AddJsonFile("appsettings.json")
@@ -29,12 +29,12 @@ public class AzureQueueSenderTests
         {
             var message = Message.GetTestMessage();
             var metaData = new MetaData { };
-            var queueOptions = new AzureQueueOptions
+            var queueOptions = new AzureQueueStorageOptions
             {
                 ConnectionString = _connectionString,
                 QueueName = "integration-test"
             };
-            var sender = new AzureQueueSender<Message>(queueOptions);
+            var sender = new AzureQueueStorageSender<Message>(queueOptions);
             await sender.SendAsync(message, metaData);
         }
     }

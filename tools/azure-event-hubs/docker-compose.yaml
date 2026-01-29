@@ -24,6 +24,13 @@ services:
     container_name: "azurite"
     image: "mcr.microsoft.com/azure-storage/azurite:latest"
     pull_policy: always
+    command: >
+      azurite
+      --skipApiVersionCheck
+      --blobHost 0.0.0.0 --blobPort 10000
+      --queueHost 0.0.0.0 --queuePort 10001
+      --tableHost 0.0.0.0 --tablePort 10002
+
     ports:
       - "10000:10000"
       - "10001:10001"

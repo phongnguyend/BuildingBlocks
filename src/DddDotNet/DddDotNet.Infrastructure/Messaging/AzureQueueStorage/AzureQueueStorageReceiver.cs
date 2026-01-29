@@ -4,13 +4,13 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
+namespace DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 
-public class AzureQueueReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
+public class AzureQueueStorageReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T>
 {
-    private readonly AzureQueueOptions _options;
+    private readonly AzureQueueStorageOptions _options;
 
-    public AzureQueueReceiver(AzureQueueOptions options)
+    public AzureQueueStorageReceiver(AzureQueueStorageOptions options)
     {
         _options = options;
     }

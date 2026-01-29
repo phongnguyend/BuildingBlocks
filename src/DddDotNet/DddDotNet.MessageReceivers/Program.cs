@@ -2,7 +2,7 @@
 using Azure.Storage.Queues;
 using DddDotNet.Infrastructure.Messaging.AmazonSQS;
 using DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using DddDotNet.Infrastructure.Messaging.GooglePubSub;
 using DddDotNet.Infrastructure.Messaging.Kafka;
 using Microsoft.Extensions.Configuration;
@@ -42,19 +42,7 @@ _ = apacheActiveMq.ReceiveAsync(async (message, metaData, cancellationToken) =>
     await Task.CompletedTask;
 });
 
-var azureQueueOptions = new AzureQueueOptions
-{
-    ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
-    QueueName = "integration-test"
-};
-var azureQueue = new AzureQueueReceiver<Program, Message>(azureQueueOptions);
-_ = azureQueue.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"AzureQueue: {message}");
-    await Task.CompletedTask;
-});
-
-var azureQueueEventGridOptions = new AzureQueueOptions
+var azureQueueEventGridOptions = new AzureQueueStorageOptions
 {
     ConnectionString = config["Messaging:AzureQueue:ConnectionString"],
     QueueName = "event-grid-integration-test",
@@ -63,7 +51,7 @@ var azureQueueEventGridOptions = new AzureQueueOptions
         MessageEncoding = QueueMessageEncoding.Base64
     }
 };
-var azureQueueEventGrid = new AzureQueueReceiver<Program, EventGridEvent>(azureQueueEventGridOptions);
+var azureQueueEventGrid = new AzureQueueStorageReceiver<Program, EventGridEvent>(azureQueueEventGridOptions);
 _ = azureQueueEventGrid.ReceiveStringAsync(async (message) =>
 {
     try

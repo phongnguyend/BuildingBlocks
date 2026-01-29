@@ -2,7 +2,7 @@
 using DddDotNet.Infrastructure.Messaging;
 using DddDotNet.Infrastructure.Messaging.AzureEventGrid;
 using DddDotNet.Infrastructure.Messaging.AzureEventHub;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 using DddDotNet.Infrastructure.Messaging.Fake;
 using DddDotNet.Infrastructure.Messaging.Kafka;
@@ -54,25 +54,25 @@ public static class MessagingCollectionExtensions
 
     public static IServiceCollection AddAzureQueueSender<T>(this IServiceCollection services, AzureQueuesOptions options)
     {
-        var queueOptions = new AzureQueueOptions
+        var queueOptions = new AzureQueueStorageOptions
         {
             ConnectionString = options.ConnectionString,
             QueueName = options.QueueNames[typeof(T).Name],
             QueueClientOptions = options.QueueClientOptions
         };
-        services.AddSingleton<IMessageSender<T>>(new AzureQueueSender<T>(queueOptions));
+        services.AddSingleton<IMessageSender<T>>(new AzureQueueStorageSender<T>(queueOptions));
         return services;
     }
 
     public static IServiceCollection AddAzureQueueReceiver<TConsumer, T>(this IServiceCollection services, AzureQueuesOptions options)
     {
-        var queueOptions = new AzureQueueOptions
+        var queueOptions = new AzureQueueStorageOptions
         {
             ConnectionString = options.ConnectionString,
             QueueName = options.QueueNames[typeof(T).Name],
             QueueClientOptions = options.QueueClientOptions
         };
-        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new AzureQueueReceiver<TConsumer, T>(queueOptions));
+        services.AddTransient<IMessageReceiver<TConsumer, T>>(x => new AzureQueueStorageReceiver<TConsumer, T>(queueOptions));
         return services;
     }
 

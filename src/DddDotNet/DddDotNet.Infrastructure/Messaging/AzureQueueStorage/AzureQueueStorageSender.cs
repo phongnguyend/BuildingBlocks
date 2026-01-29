@@ -2,13 +2,13 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
+namespace DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 
-public class AzureQueueSender<T> : IMessageSender<T>
+public class AzureQueueStorageSender<T> : IMessageSender<T>
 {
-    private readonly AzureQueueOptions _options;
+    private readonly AzureQueueStorageOptions _options;
 
-    public AzureQueueSender(AzureQueueOptions options)
+    public AzureQueueStorageSender(AzureQueueStorageOptions options)
     {
         _options = options;
     }

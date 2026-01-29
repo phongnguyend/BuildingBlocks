@@ -3,7 +3,7 @@ using Azure.Storage.Queues;
 using System;
 using System.Collections.Generic;
 
-namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
+namespace DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 
 public class AzureQueuesOptions
 {
@@ -16,7 +16,7 @@ public class AzureQueuesOptions
     public QueueClientOptions QueueClientOptions { get; set; }
 }
 
-public class AzureQueueOptions
+public class AzureQueueStorageOptions
 {
     public bool UseManagedIdentity { get; set; }
 

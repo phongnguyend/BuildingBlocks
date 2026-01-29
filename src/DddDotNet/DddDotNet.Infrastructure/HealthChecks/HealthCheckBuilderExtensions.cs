@@ -1,5 +1,5 @@
 ﻿using DddDotNet.Infrastructure.HealthChecks;
-using DddDotNet.Infrastructure.Messaging.AzureQueue;
+using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using DddDotNet.Infrastructure.Messaging.AzureServiceBus;
 using DddDotNet.Infrastructure.Messaging.Kafka;
 using DddDotNet.Infrastructure.Messaging.RabbitMQ;

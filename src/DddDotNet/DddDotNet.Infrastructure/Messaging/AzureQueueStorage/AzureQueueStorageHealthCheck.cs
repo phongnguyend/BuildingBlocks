@@ -1,7 +1,7 @@
 ﻿using DddDotNet.Infrastructure.HealthChecks;
 using System;
 
-namespace DddDotNet.Infrastructure.Messaging.AzureQueue;
+namespace DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 
 public class AzureQueueStorageHealthCheck : TcpHealthCheck
 {
