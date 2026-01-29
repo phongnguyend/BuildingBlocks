@@ -4,7 +4,6 @@ using DddDotNet.Infrastructure.Messaging.AmazonSQS;
 using DddDotNet.Infrastructure.Messaging.ApacheActiveMQ;
 using DddDotNet.Infrastructure.Messaging.AzureQueueStorage;
 using DddDotNet.Infrastructure.Messaging.GooglePubSub;
-using DddDotNet.Infrastructure.Messaging.Kafka;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -73,19 +72,6 @@ var googlePubSub = new GooglePubSubReceiver<Program, Message>(googlePubSubOption
 _ = googlePubSub.ReceiveAsync(async (message, metaData, cancellationToken) =>
 {
     Console.WriteLine($"GooglePubSub: {message}");
-    await Task.CompletedTask;
-});
-
-var kafka = new KafkaReceiver<Program, Message>(new KafkaReceiverOptions
-{
-    BootstrapServers = "localhost:9092",
-    Topic = "ddddotnet",
-    GroupId = "integrationtest2",
-    AutoCommitEnabled = false,
-});
-_ = kafka.ReceiveAsync(async (message, metaData, cancellationToken) =>
-{
-    Console.WriteLine($"Kafka: {message}");
     await Task.CompletedTask;
 });
 

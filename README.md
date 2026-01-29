@@ -31,7 +31,7 @@
   | Apache ActiveMQ | ✅ | | ✅ | [/Messaging/ApacheActiveMQ](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/ApacheActiveMQ) |
   | Azure Event Grid | ✅ | | ✅ | [/Messaging/AzureEventGrid](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureEventGrid) |
   | Azure Event Hub | ✅ | | ✅ | [/Messaging/AzureEventHub](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureEventHub) |
-  | Azure Queue Storage| ✅ | | ✅ | [/Messaging/AzureQueue](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureQueueStorage) |
+  | Azure Queue Storage| ✅ | | ✅ | [/Messaging/AzureQueueStorage](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureQueueStorage) |
   | Azure Service Bus | ✅ | | ✅ | [/Messaging/AzureServiceBus](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/AzureServiceBus) |
   | Google Cloud Pub/Sub | ✅ | | ✅ | [/Messaging/GooglePubSub](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/GooglePubSub) |
   | Kafka | ✅ | | ✅ | [/Messaging/Kafka](/src/DddDotNet/DddDotNet.Infrastructure/Messaging/Kafka) |
