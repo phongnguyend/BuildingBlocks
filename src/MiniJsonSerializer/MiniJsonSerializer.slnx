@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="MiniJsonSerializer.Tests/MiniJsonSerializer.Tests.csproj" />
+  <Project Path="MiniJsonSerializer/MiniJsonSerializer.csproj" />
+</Solution>
