@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Reflection;
 using System.Text;
 
@@ -9,11 +9,19 @@ public static class MiniJsonSerializer
     public static string Serialize(object obj)
     {
         var sb = new StringBuilder();
-        WriteValue(sb, obj);
+        WriteValue(sb, obj, false, 0);
         return sb.ToString();
     }
 
-    static void WriteValue(StringBuilder sb, object value)
+    public static string Serialize(object obj, JsonSerializerOptions options)
+    {
+        var sb = new StringBuilder();
+        bool indent = options?.WriteIndented ?? false;
+        WriteValue(sb, obj, indent, 0);
+        return sb.ToString();
+    }
+
+    static void WriteValue(StringBuilder sb, object value, bool indent, int depth)
     {
         if (value == null)
         {
@@ -36,15 +44,15 @@ public static class MiniJsonSerializer
                 break;
 
             case IDictionary<string, object> dict:
-                WriteDictionary(sb, dict);
+                WriteDictionary(sb, dict, indent, depth);
                 break;
 
             case IEnumerable enumerable when value is not string:
-                WriteArray(sb, enumerable);
+                WriteArray(sb, enumerable, indent, depth);
                 break;
 
             default:
-                WriteObject(sb, value);
+                WriteObject(sb, value, indent, depth);
                 break;
         }
     }
@@ -71,7 +79,7 @@ public static class MiniJsonSerializer
         sb.Append('"');
     }
 
-    static void WriteArray(StringBuilder sb, IEnumerable array)
+    static void WriteArray(StringBuilder sb, IEnumerable array, bool indent, int depth)
     {
         sb.Append('[');
 
@@ -82,14 +90,26 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
-            WriteValue(sb, item);
+            if (indent)
+            {
+                sb.AppendLine();
+                sb.Append(new string(' ', (depth + 1) * 2));
+            }
+
+            WriteValue(sb, item, indent, depth + 1);
             first = false;
+        }
+
+        if (!first && indent)
+        {
+            sb.AppendLine();
+            sb.Append(new string(' ', depth * 2));
         }
 
         sb.Append(']');
     }
 
-    static void WriteDictionary(StringBuilder sb, IDictionary<string, object> dict)
+    static void WriteDictionary(StringBuilder sb, IDictionary<string, object> dict, bool indent, int depth)
     {
         sb.Append('{');
 
@@ -100,17 +120,33 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
+            if (indent)
+            {
+                sb.AppendLine();
+                sb.Append(new string(' ', (depth + 1) * 2));
+            }
+
             WriteString(sb, kv.Key);
             sb.Append(':');
-            WriteValue(sb, kv.Value);
+
+            if (indent)
+                sb.Append(' ');
+
+            WriteValue(sb, kv.Value, indent, depth + 1);
 
             first = false;
+        }
+
+        if (!first && indent)
+        {
+            sb.AppendLine();
+            sb.Append(new string(' ', depth * 2));
         }
 
         sb.Append('}');
     }
 
-    static void WriteObject(StringBuilder sb, object obj)
+    static void WriteObject(StringBuilder sb, object obj, bool indent, int depth)
     {
         sb.Append('{');
 
@@ -129,12 +165,27 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
+            if (indent)
+            {
+                sb.AppendLine();
+                sb.Append(new string(' ', (depth + 1) * 2));
+            }
+
             WriteString(sb, prop.Name);
             sb.Append(':');
 
-            WriteValue(sb, val);
+            if (indent)
+                sb.Append(' ');
+
+            WriteValue(sb, val, indent, depth + 1);
 
             first = false;
+        }
+
+        if (!first && indent)
+        {
+            sb.AppendLine();
+            sb.Append(new string(' ', depth * 2));
         }
 
         sb.Append('}');

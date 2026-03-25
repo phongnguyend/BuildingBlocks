@@ -1,4 +1,4 @@
-﻿using Serializer = MiniJsonSerializer.MiniJsonSerializer;
+using Serializer = MiniJsonSerializer.MiniJsonSerializer;
 
 namespace MiniJsonSerializer.Tests;
 
@@ -293,4 +293,149 @@ public class SerializeTests
     }
 
     private record PersonWithReadOnly(string Name, int Age);
+
+    [Fact]
+    public void Serialize_WriteIndented_Object_FormatsWithIndentation()
+    {
+        var obj = new { Name = "Bob", Age = 25 };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(obj, options);
+        var expected =
+            "{\r\n" +
+            "  \"Name\": \"Bob\",\r\n" +
+            "  \"Age\": 25\r\n" +
+            "}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_Array_FormatsWithIndentation()
+    {
+        var array = new[] { 1, 2, 3 };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(array, options);
+        var expected =
+            "[\r\n" +
+            "  1,\r\n" +
+            "  2,\r\n" +
+            "  3\r\n" +
+            "]";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_Dictionary_FormatsWithIndentation()
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["name"] = "Alice",
+            ["age"] = 30
+        };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(dict, options);
+        var expected =
+            "{\r\n" +
+            "  \"name\": \"Alice\",\r\n" +
+            "  \"age\": 30\r\n" +
+            "}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_NestedObject_FormatsWithIndentation()
+    {
+        var obj = new
+        {
+            Name = "Parent",
+            Child = new { Name = "Child", Age = 5 }
+        };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(obj, options);
+        var expected =
+            "{\r\n" +
+            "  \"Name\": \"Parent\",\r\n" +
+            "  \"Child\": {\r\n" +
+            "    \"Name\": \"Child\",\r\n" +
+            "    \"Age\": 5\r\n" +
+            "  }\r\n" +
+            "}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_EmptyObject_NoIndentation()
+    {
+        var dict = new Dictionary<string, object>();
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(dict, options);
+        Assert.Equal("{}", result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_EmptyArray_NoIndentation()
+    {
+        var array = new int[] { };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(array, options);
+        Assert.Equal("[]", result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_False_ProducesCompactOutput()
+    {
+        var obj = new { Name = "Bob", Age = 25 };
+        var options = new JsonSerializerOptions { WriteIndented = false };
+        var result = Serializer.Serialize(obj, options);
+        Assert.Equal("{\"Name\":\"Bob\",\"Age\":25}", result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_DeeplyNested_FormatsCorrectly()
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["level1"] = new Dictionary<string, object>
+            {
+                ["level2"] = new Dictionary<string, object>
+                {
+                    ["level3"] = "deep"
+                }
+            }
+        };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(dict, options);
+        var expected =
+            "{\r\n" +
+            "  \"level1\": {\r\n" +
+            "    \"level2\": {\r\n" +
+            "      \"level3\": \"deep\"\r\n" +
+            "    }\r\n" +
+            "  }\r\n" +
+            "}";
+        Assert.Equal(expected, result);
+    }
+
+    [Fact]
+    public void Serialize_WriteIndented_ArrayOfObjects_FormatsCorrectly()
+    {
+        var array = new[]
+        {
+            new { Id = 1, Name = "A" },
+            new { Id = 2, Name = "B" }
+        };
+        var options = new JsonSerializerOptions { WriteIndented = true };
+        var result = Serializer.Serialize(array, options);
+        var expected =
+            "[\r\n" +
+            "  {\r\n" +
+            "    \"Id\": 1,\r\n" +
+            "    \"Name\": \"A\"\r\n" +
+            "  },\r\n" +
+            "  {\r\n" +
+            "    \"Id\": 2,\r\n" +
+            "    \"Name\": \"B\"\r\n" +
+            "  }\r\n" +
+            "]";
+        Assert.Equal(expected, result);
+    }
 }
