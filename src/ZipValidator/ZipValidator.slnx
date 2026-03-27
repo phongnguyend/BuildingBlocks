@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="ZipValidator.Tests/ZipValidator.Tests.csproj" />
+  <Project Path="ZipValidator/ZipValidator.csproj" />
+</Solution>
