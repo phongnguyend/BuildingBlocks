@@ -438,4 +438,99 @@ public class SerializeTests
             "]";
         Assert.Equal(expected, result);
     }
+
+    [Fact]
+    public void Serialize_MaxDepth_ExceedsLimit_ThrowsInvalidOperationException()
+    {
+        var obj = new
+        {
+            Child = new
+            {
+                Child = new { Name = "deep" }
+            }
+        };
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<InvalidOperationException>(() => Serializer.Serialize(obj, options));
+    }
+
+    [Fact]
+    public void Serialize_MaxDepth_ExactLimit_Succeeds()
+    {
+        var obj = new
+        {
+            Child = new { Name = "leaf" }
+        };
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        var result = Serializer.Serialize(obj, options);
+        Assert.Contains("\"Name\":\"leaf\"", result);
+    }
+
+    [Fact]
+    public void Serialize_MaxDepth_FlatObject_Succeeds()
+    {
+        var obj = new { Name = "Bob", Age = 25 };
+        var options = new JsonSerializerOptions { MaxDepth = 1 };
+        var result = Serializer.Serialize(obj, options);
+        Assert.Equal("{\"Name\":\"Bob\",\"Age\":25}", result);
+    }
+
+    [Fact]
+    public void Serialize_MaxDepth_NestedArray_ExceedsLimit_Throws()
+    {
+        var array = new object[] { new object[] { new object[] { 1 } } };
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<InvalidOperationException>(() => Serializer.Serialize(array, options));
+    }
+
+    [Fact]
+    public void Serialize_MaxDepth_NestedDictionary_ExceedsLimit_Throws()
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["a"] = new Dictionary<string, object>
+            {
+                ["b"] = new Dictionary<string, object>
+                {
+                    ["c"] = 1
+                }
+            }
+        };
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<InvalidOperationException>(() => Serializer.Serialize(dict, options));
+    }
+
+    [Fact]
+    public void Serialize_MaxDepth_Default64_DeeplyNestedSucceeds()
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["level1"] = new Dictionary<string, object>
+            {
+                ["level2"] = new Dictionary<string, object>
+                {
+                    ["level3"] = "deep"
+                }
+            }
+        };
+        var options = new JsonSerializerOptions();
+        var result = Serializer.Serialize(dict, options);
+        Assert.Equal("{\"level1\":{\"level2\":{\"level3\":\"deep\"}}}", result);
+    }
+
+    [Fact]
+    public void Serialize_WithoutOptions_NoDepthLimit()
+    {
+        var dict = new Dictionary<string, object>
+        {
+            ["level1"] = new Dictionary<string, object>
+            {
+                ["level2"] = new Dictionary<string, object>
+                {
+                    ["level3"] = "deep"
+                }
+            }
+        };
+        var result = Serializer.Serialize(dict);
+        Assert.Equal("{\"level1\":{\"level2\":{\"level3\":\"deep\"}}}", result);
+    }
 }

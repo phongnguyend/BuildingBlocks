@@ -363,6 +363,94 @@ public class DeserializeTests
         Assert.Equal(original, result);
     }
 
+    [Fact]
+    public void Deserialize_MaxDepth_ExceedsLimit_ThrowsFormatException()
+    {
+        var json = "{\"a\":{\"b\":{\"c\":1}}}";
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<FormatException>(() => Serializer.Deserialize(json, options));
+    }
+
+    [Fact]
+    public void Deserialize_MaxDepth_ExactLimit_Succeeds()
+    {
+        var json = "{\"a\":{\"b\":1}}";
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        var result = Serializer.Deserialize(json, options);
+        var dict = Assert.IsType<Dictionary<string, object?>>(result);
+        var inner = Assert.IsType<Dictionary<string, object?>>(dict["a"]);
+        Assert.Equal(1, inner["b"]);
+    }
+
+    [Fact]
+    public void Deserialize_MaxDepth_FlatObject_Succeeds()
+    {
+        var json = "{\"Name\":\"Bob\",\"Age\":25}";
+        var options = new JsonSerializerOptions { MaxDepth = 1 };
+        var result = Serializer.Deserialize(json, options);
+        var dict = Assert.IsType<Dictionary<string, object?>>(result);
+        Assert.Equal("Bob", dict["Name"]);
+    }
+
+    [Fact]
+    public void Deserialize_MaxDepth_NestedArray_ExceedsLimit_Throws()
+    {
+        var json = "[[[1]]]";
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<FormatException>(() => Serializer.Deserialize(json, options));
+    }
+
+    [Fact]
+    public void Deserialize_MaxDepth_Default64_DeeplyNestedSucceeds()
+    {
+        var json = "{\"level1\":{\"level2\":{\"level3\":\"deep\"}}}";
+        var options = new JsonSerializerOptions();
+        var result = Serializer.Deserialize(json, options);
+        var l1 = Assert.IsType<Dictionary<string, object?>>(result);
+        var l2 = Assert.IsType<Dictionary<string, object?>>(l1["level1"]);
+        var l3 = Assert.IsType<Dictionary<string, object?>>(l2["level2"]);
+        Assert.Equal("deep", l3["level3"]);
+    }
+
+    [Fact]
+    public void Deserialize_WithoutOptions_NoDepthLimit()
+    {
+        var json = "{\"level1\":{\"level2\":{\"level3\":\"deep\"}}}";
+        var result = Serializer.Deserialize(json);
+        var l1 = Assert.IsType<Dictionary<string, object?>>(result);
+        var l2 = Assert.IsType<Dictionary<string, object?>>(l1["level1"]);
+        var l3 = Assert.IsType<Dictionary<string, object?>>(l2["level2"]);
+        Assert.Equal("deep", l3["level3"]);
+    }
+
+    [Fact]
+    public void Deserialize_Generic_WithOptions_MaxDepth_ExceedsLimit_Throws()
+    {
+        var json = "{\"Name\":\"Parent\",\"Child\":{\"Name\":\"Child\",\"Age\":5}}";
+        var options = new JsonSerializerOptions { MaxDepth = 1 };
+        Assert.Throws<FormatException>(() => Serializer.Deserialize<Parent>(json, options));
+    }
+
+    [Fact]
+    public void Deserialize_Generic_WithOptions_MaxDepth_Succeeds()
+    {
+        var json = "{\"Name\":\"Parent\",\"Child\":{\"Name\":\"Child\",\"Age\":5}}";
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        var result = Serializer.Deserialize<Parent>(json, options);
+        Assert.NotNull(result);
+        Assert.Equal("Parent", result.Name);
+        Assert.NotNull(result.Child);
+        Assert.Equal("Child", result.Child.Name);
+    }
+
+    [Fact]
+    public void Deserialize_MaxDepth_MixedArrayAndObject_ExceedsLimit_Throws()
+    {
+        var json = "[{\"a\":{\"b\":1}}]";
+        var options = new JsonSerializerOptions { MaxDepth = 2 };
+        Assert.Throws<FormatException>(() => Serializer.Deserialize(json, options));
+    }
+
     public class Person
     {
         public string? Name { get; set; }

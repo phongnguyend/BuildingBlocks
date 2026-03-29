@@ -7,22 +7,23 @@ namespace MiniJsonSerializer;
 
 public static class MiniJsonSerializer
 {
+    private static readonly JsonSerializerOptions DefaultOptions = new();
+
     public static string Serialize(object obj)
     {
         var sb = new StringBuilder();
-        WriteValue(sb, obj, false, 0);
+        WriteValue(sb, obj, DefaultOptions, 0);
         return sb.ToString();
     }
 
     public static string Serialize(object obj, JsonSerializerOptions options)
     {
         var sb = new StringBuilder();
-        bool indent = options?.WriteIndented ?? false;
-        WriteValue(sb, obj, indent, 0);
+        WriteValue(sb, obj, options ?? DefaultOptions, 0);
         return sb.ToString();
     }
 
-    static void WriteValue(StringBuilder sb, object value, bool indent, int depth)
+    static void WriteValue(StringBuilder sb, object value, JsonSerializerOptions options, int depth)
     {
         if (value == null)
         {
@@ -41,19 +42,19 @@ public static class MiniJsonSerializer
                 break;
 
             case int or long or float or double or decimal:
-                sb.Append(Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture));
+                sb.Append(Convert.ToString(value, CultureInfo.InvariantCulture));
                 break;
 
             case IDictionary<string, object> dict:
-                WriteDictionary(sb, dict, indent, depth);
+                WriteDictionary(sb, dict, options, depth);
                 break;
 
             case IEnumerable enumerable when value is not string:
-                WriteArray(sb, enumerable, indent, depth);
+                WriteArray(sb, enumerable, options, depth);
                 break;
 
             default:
-                WriteObject(sb, value, indent, depth);
+                WriteObject(sb, value, options, depth);
                 break;
         }
     }
@@ -80,8 +81,11 @@ public static class MiniJsonSerializer
         sb.Append('"');
     }
 
-    static void WriteArray(StringBuilder sb, IEnumerable array, bool indent, int depth)
+    static void WriteArray(StringBuilder sb, IEnumerable array, JsonSerializerOptions options, int depth)
     {
+        if (options.MaxDepth > 0 && depth >= options.MaxDepth)
+            throw new InvalidOperationException($"Maximum depth of {options.MaxDepth} exceeded.");
+
         sb.Append('[');
 
         bool first = true;
@@ -91,17 +95,17 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
-            if (indent)
+            if (options.WriteIndented)
             {
                 sb.AppendLine();
                 sb.Append(new string(' ', (depth + 1) * 2));
             }
 
-            WriteValue(sb, item, indent, depth + 1);
+            WriteValue(sb, item, options, depth + 1);
             first = false;
         }
 
-        if (!first && indent)
+        if (!first && options.WriteIndented)
         {
             sb.AppendLine();
             sb.Append(new string(' ', depth * 2));
@@ -110,8 +114,11 @@ public static class MiniJsonSerializer
         sb.Append(']');
     }
 
-    static void WriteDictionary(StringBuilder sb, IDictionary<string, object> dict, bool indent, int depth)
+    static void WriteDictionary(StringBuilder sb, IDictionary<string, object> dict, JsonSerializerOptions options, int depth)
     {
+        if (options.MaxDepth > 0 && depth >= options.MaxDepth)
+            throw new InvalidOperationException($"Maximum depth of {options.MaxDepth} exceeded.");
+
         sb.Append('{');
 
         bool first = true;
@@ -121,7 +128,7 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
-            if (indent)
+            if (options.WriteIndented)
             {
                 sb.AppendLine();
                 sb.Append(new string(' ', (depth + 1) * 2));
@@ -130,15 +137,15 @@ public static class MiniJsonSerializer
             WriteString(sb, kv.Key);
             sb.Append(':');
 
-            if (indent)
+            if (options.WriteIndented)
                 sb.Append(' ');
 
-            WriteValue(sb, kv.Value, indent, depth + 1);
+            WriteValue(sb, kv.Value, options, depth + 1);
 
             first = false;
         }
 
-        if (!first && indent)
+        if (!first && options.WriteIndented)
         {
             sb.AppendLine();
             sb.Append(new string(' ', depth * 2));
@@ -147,8 +154,11 @@ public static class MiniJsonSerializer
         sb.Append('}');
     }
 
-    static void WriteObject(StringBuilder sb, object obj, bool indent, int depth)
+    static void WriteObject(StringBuilder sb, object obj, JsonSerializerOptions options, int depth)
     {
+        if (options.MaxDepth > 0 && depth >= options.MaxDepth)
+            throw new InvalidOperationException($"Maximum depth of {options.MaxDepth} exceeded.");
+
         sb.Append('{');
 
         bool first = true;
@@ -166,7 +176,7 @@ public static class MiniJsonSerializer
             if (!first)
                 sb.Append(',');
 
-            if (indent)
+            if (options.WriteIndented)
             {
                 sb.AppendLine();
                 sb.Append(new string(' ', (depth + 1) * 2));
@@ -175,15 +185,15 @@ public static class MiniJsonSerializer
             WriteString(sb, prop.Name);
             sb.Append(':');
 
-            if (indent)
+            if (options.WriteIndented)
                 sb.Append(' ');
 
-            WriteValue(sb, val, indent, depth + 1);
+            WriteValue(sb, val, options, depth + 1);
 
             first = false;
         }
 
-        if (!first && indent)
+        if (!first && options.WriteIndented)
         {
             sb.AppendLine();
             sb.Append(new string(' ', depth * 2));
@@ -194,7 +204,18 @@ public static class MiniJsonSerializer
 
     public static object? Deserialize(string json)
     {
-        var reader = new JsonReader(json);
+        var reader = new JsonReader(json, 0);
+        var result = reader.ReadValue();
+        reader.SkipWhitespace();
+        if (reader.Position < reader.Length)
+            throw new FormatException($"Unexpected trailing content at position {reader.Position}.");
+        return result;
+    }
+
+    public static object? Deserialize(string json, JsonSerializerOptions options)
+    {
+        int maxDepth = options?.MaxDepth ?? 64;
+        var reader = new JsonReader(json, maxDepth);
         var result = reader.ReadValue();
         reader.SkipWhitespace();
         if (reader.Position < reader.Length)
@@ -205,6 +226,12 @@ public static class MiniJsonSerializer
     public static T? Deserialize<T>(string json)
     {
         var value = Deserialize(json);
+        return (T?)ConvertTo(value, typeof(T));
+    }
+
+    public static T? Deserialize<T>(string json, JsonSerializerOptions options)
+    {
+        var value = Deserialize(json, options);
         return (T?)ConvertTo(value, typeof(T));
     }
 
@@ -318,11 +345,15 @@ public static class MiniJsonSerializer
     {
         private readonly ReadOnlySpan<char> _json;
         private int _position;
+        private readonly int _maxDepth;
+        private int _currentDepth;
 
-        public JsonReader(string json)
+        public JsonReader(string json, int maxDepth)
         {
             _json = json.AsSpan();
             _position = 0;
+            _maxDepth = maxDepth;
+            _currentDepth = 0;
         }
 
         public int Position => _position;
@@ -412,6 +443,11 @@ public static class MiniJsonSerializer
 
         Dictionary<string, object?> ReadObject()
         {
+            if (_maxDepth > 0 && _currentDepth >= _maxDepth)
+                throw new FormatException($"Maximum depth of {_maxDepth} exceeded.");
+
+            _currentDepth++;
+
             Expect('{');
             var dict = new Dictionary<string, object?>();
             SkipWhitespace();
@@ -419,6 +455,7 @@ public static class MiniJsonSerializer
             if (_position < _json.Length && _json[_position] == '}')
             {
                 _position++;
+                _currentDepth--;
                 return dict;
             }
 
@@ -442,11 +479,17 @@ public static class MiniJsonSerializer
 
             SkipWhitespace();
             Expect('}');
+            _currentDepth--;
             return dict;
         }
 
         List<object?> ReadArray()
         {
+            if (_maxDepth > 0 && _currentDepth >= _maxDepth)
+                throw new FormatException($"Maximum depth of {_maxDepth} exceeded.");
+
+            _currentDepth++;
+
             Expect('[');
             var list = new List<object?>();
             SkipWhitespace();
@@ -454,6 +497,7 @@ public static class MiniJsonSerializer
             if (_position < _json.Length && _json[_position] == ']')
             {
                 _position++;
+                _currentDepth--;
                 return list;
             }
 
@@ -473,6 +517,7 @@ public static class MiniJsonSerializer
 
             SkipWhitespace();
             Expect(']');
+            _currentDepth--;
             return list;
         }
 
