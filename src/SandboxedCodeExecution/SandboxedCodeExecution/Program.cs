@@ -16,16 +16,28 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+var languageConfigs = new Dictionary<string, LanguageConfig>(StringComparer.OrdinalIgnoreCase)
+{
+    ["python"] = new("python:3.11", "script.py", "python /app/script.py"),
+    ["node"] = new("node:20", "script.js", "node /app/script.js"),
+    ["powershell"] = new("mcr.microsoft.com/powershell:lts", "script.ps1", "pwsh /app/script.ps1", ExtraDockerArgs: "--tmpfs /tmp"),
+};
+
 app.MapPost("/run", async (ScriptRequest req) =>
 {
     if (string.IsNullOrWhiteSpace(req.Code))
         return Results.BadRequest("Code is empty");
 
+    var language = req.Language ?? "python";
+
+    if (!languageConfigs.TryGetValue(language, out var config))
+        return Results.BadRequest($"Unsupported language: '{language}'. Supported: {string.Join(", ", languageConfigs.Keys)}");
+
     var jobId = Guid.NewGuid().ToString();
     var workDir = Path.Combine(Path.GetTempPath(), "runner", jobId);
     Directory.CreateDirectory(workDir);
 
-    var scriptPath = Path.Combine(workDir, "script.py");
+    var scriptPath = Path.Combine(workDir, config.FileName);
     await File.WriteAllTextAsync(scriptPath, req.Code);
 
     var scriptArgs = string.Empty;
@@ -40,9 +52,10 @@ run --rm
 --memory 128m
 --cpus 0.5
 --read-only
+{config.ExtraDockerArgs ?? ""}
 -v ""{workDir}:/app""
-python:3.11
-python /app/script.py{scriptArgs}
+{config.DockerImage}
+{config.RunCommand}{scriptArgs}
 ";
 
     dockerArgs = dockerArgs.Replace(Environment.NewLine, " ");
@@ -65,7 +78,7 @@ python /app/script.py{scriptArgs}
         var stderrTask = process.StandardError.ReadToEndAsync();
 
         // timeout 5s
-        var timeoutTask = Task.Delay(5000);
+        var timeoutTask = Task.Delay(30000);
 
         var completed = await Task.WhenAny(
             process.WaitForExitAsync(),
@@ -105,4 +118,6 @@ python /app/script.py{scriptArgs}
 
 app.Run();
 
-record ScriptRequest(string Code, string[]? Arguments = null);
+record ScriptRequest(string Code, string? Language = null, string[]? Arguments = null);
+
+record LanguageConfig(string DockerImage, string FileName, string RunCommand, string? ExtraDockerArgs = null);

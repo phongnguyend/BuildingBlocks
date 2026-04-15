@@ -1,5 +1,6 @@
 @SandboxExecution_HostAddress = http://localhost:5014
 
+### Python (default)
 POST {{SandboxExecution_HostAddress}}/run/
 Content-Type: application/json
 
@@ -9,11 +10,59 @@ Content-Type: application/json
 
 ###
 
+### Python with arguments
 POST {{SandboxExecution_HostAddress}}/run/
 Content-Type: application/json
 
 {
   "Code": "import sys\nprint('Arguments:', sys.argv[1:])",
+  "Language": "python",
+  "Arguments": ["arg1", "arg2", "arg3"]
+}
+
+###
+
+### Node.js
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "console.log('hello from node');",
+  "Language": "node"
+}
+
+###
+
+### Node.js with arguments
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "console.log('Arguments:', process.argv.slice(2));",
+  "Language": "node",
+  "Arguments": ["arg1", "arg2", "arg3"]
+}
+
+###
+
+### PowerShell
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "Write-Output 'hello from powershell'",
+  "Language": "powershell"
+}
+
+###
+
+### PowerShell with arguments
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "param($a, $b, $c)\nWrite-Output \"Arguments: $a, $b, $c\"",
+  "Language": "powershell",
   "Arguments": ["arg1", "arg2", "arg3"]
 }
 
