@@ -1,0 +1,22 @@
+@SandboxExecution_HostAddress = http://localhost:5014
+
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "print('hello from docker')"
+}
+
+###
+
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "import sys\nprint('Arguments:', sys.argv[1:])",
+  "Arguments": ["arg1", "arg2", "arg3"]
+}
+
+###
+
+# Response
