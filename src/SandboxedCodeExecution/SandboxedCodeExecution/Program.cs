@@ -23,6 +23,21 @@ var languageConfigs = new Dictionary<string, LanguageConfig>(StringComparer.Ordi
     ["powershell"] = new("mcr.microsoft.com/powershell:lts", "script.ps1", "pwsh /app/script.ps1", ExtraDockerArgs: "--tmpfs /tmp"),
 };
 
+// Pre-pull container images
+foreach (var config in languageConfigs.Values)
+{
+    var pullPsi = new ProcessStartInfo
+    {
+        FileName = "docker",
+        Arguments = $"pull {config.DockerImage}",
+        RedirectStandardOutput = true,
+        RedirectStandardError = true
+    };
+
+    using var process = Process.Start(pullPsi)!;
+    await process.WaitForExitAsync();
+}
+
 app.MapPost("/run", async (ScriptRequest req) =>
 {
     if (string.IsNullOrWhiteSpace(req.Code))
@@ -40,25 +55,31 @@ app.MapPost("/run", async (ScriptRequest req) =>
     var scriptPath = Path.Combine(workDir, config.FileName);
     await File.WriteAllTextAsync(scriptPath, req.Code);
 
-    var scriptArgs = string.Empty;
-    if (req.Arguments is { Length: > 0 })
+    var dockerArgsList = new List<string>();
+
+    dockerArgsList.AddRange([
+        "run", "--rm",
+        "--network", "none",
+        "--memory", "128m",
+        "--cpus", "0.5",
+        "--read-only"
+    ]);
+
+    if (!string.IsNullOrWhiteSpace(config.ExtraDockerArgs))
     {
-        scriptArgs = " " + string.Join(" ", req.Arguments.Select(a => $"\"{a}\""));
+        dockerArgsList.AddRange(config.ExtraDockerArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries));
     }
 
-    var dockerArgs = $@"
-run --rm
---network none
---memory 128m
---cpus 0.5
---read-only
-{config.ExtraDockerArgs ?? ""}
--v ""{workDir}:/app""
-{config.DockerImage}
-{config.RunCommand}{scriptArgs}
-";
+    dockerArgsList.AddRange(["-v", $"{workDir}:/app"]);
+    dockerArgsList.Add(config.DockerImage);
+    dockerArgsList.AddRange(config.RunCommand.Split(' ', StringSplitOptions.RemoveEmptyEntries));
 
-    dockerArgs = dockerArgs.Replace(Environment.NewLine, " ");
+    if (req.Arguments is { Length: > 0 })
+    {
+        dockerArgsList.AddRange(req.Arguments);
+    }
+
+    var dockerArgs = string.Join(" ", dockerArgsList.Select(a => a.Contains(' ') ? $"\"{a}\"" : a));
 
     var psi = new ProcessStartInfo
     {
