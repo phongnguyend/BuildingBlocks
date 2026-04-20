@@ -21,6 +21,7 @@ var languageConfigs = new Dictionary<string, LanguageConfig>(StringComparer.Ordi
     ["python"] = new("python:3.11", "script.py", "python /app/script.py"),
     ["node"] = new("node:20", "script.js", "node /app/script.js"),
     ["powershell"] = new("mcr.microsoft.com/powershell:lts", "script.ps1", "pwsh /app/script.ps1", ExtraDockerArgs: "--tmpfs /tmp"),
+    ["csharp"] = new("mcr.microsoft.com/dotnet/sdk:10.0", "script.cs", "dotnet run /app/script.cs", DisableNetwork: false, ReadOnly: false),
 };
 
 // Pre-pull container images
@@ -57,13 +58,22 @@ app.MapPost("/run", async (ScriptRequest req) =>
 
     var dockerArgsList = new List<string>();
 
+    dockerArgsList.AddRange(["run", "--rm"]);
+
+    if (config.DisableNetwork)
+    {
+        dockerArgsList.AddRange(["--network", "none"]);
+    }
+
     dockerArgsList.AddRange([
-        "run", "--rm",
-        "--network", "none",
-        "--memory", "128m",
-        "--cpus", "0.5",
-        "--read-only"
+        "--memory", "256m",
+        "--cpus", "1.0"
     ]);
+
+    if (config.ReadOnly)
+    {
+        dockerArgsList.Add("--read-only");
+    }
 
     if (!string.IsNullOrWhiteSpace(config.ExtraDockerArgs))
     {
@@ -99,7 +109,7 @@ app.MapPost("/run", async (ScriptRequest req) =>
         var stderrTask = process.StandardError.ReadToEndAsync();
 
         // timeout 5s
-        var timeoutTask = Task.Delay(30000);
+        var timeoutTask = Task.Delay(600000);
 
         var completed = await Task.WhenAny(
             process.WaitForExitAsync(),
@@ -141,4 +151,4 @@ app.Run();
 
 record ScriptRequest(string Code, string? Language = null, string[]? Arguments = null);
 
-record LanguageConfig(string DockerImage, string FileName, string RunCommand, string? ExtraDockerArgs = null);
+record LanguageConfig(string DockerImage, string FileName, string RunCommand, string? ExtraDockerArgs = null, bool DisableNetwork = true, bool ReadOnly = true);

@@ -68,4 +68,27 @@ Content-Type: application/json
 
 ###
 
+### C#
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "Console.WriteLine(\"hello from csharp\");",
+  "Language": "csharp"
+}
+
+###
+
+### C# with arguments
+POST {{SandboxExecution_HostAddress}}/run/
+Content-Type: application/json
+
+{
+  "Code": "Console.WriteLine($\"Arguments: {string.Join(\", \", args)}\");",
+  "Language": "csharp",
+  "Arguments": ["arg1", "arg2", "arg3"]
+}
+
+###
+
 # Response
