@@ -35,19 +35,46 @@ foreach (var config in languageConfigs.Values)
         RedirectStandardError = true
     };
 
+    Console.WriteLine($"Pulling image: {config.DockerImage}...");
+
     using var process = Process.Start(pullPsi)!;
+
+    var stdoutTask = process.StandardOutput.ReadToEndAsync();
+    var stderrTask = process.StandardError.ReadToEndAsync();
+
     await process.WaitForExitAsync();
+
+    var stdout = await stdoutTask;
+    var stderr = await stderrTask;
+
+    if (!string.IsNullOrWhiteSpace(stdout))
+    {
+        Console.WriteLine(stdout);
+    }
+
+    if (!string.IsNullOrWhiteSpace(stderr))
+    {
+        Console.Error.WriteLine(stderr);
+    }
+
+    Console.WriteLine(process.ExitCode == 0
+        ? $"Successfully pulled: {config.DockerImage}"
+        : $"Failed to pull: {config.DockerImage} (exit code {process.ExitCode})");
 }
 
 app.MapPost("/run", async (ScriptRequest req) =>
 {
     if (string.IsNullOrWhiteSpace(req.Code))
+    {
         return Results.BadRequest("Code is empty");
+    }
 
     var language = req.Language ?? "python";
 
     if (!languageConfigs.TryGetValue(language, out var config))
+    {
         return Results.BadRequest($"Unsupported language: '{language}'. Supported: {string.Join(", ", languageConfigs.Keys)}");
+    }
 
     var sessionId = req.SessionId ?? Guid.NewGuid().ToString();
     var workDir = Path.Combine(Path.GetTempPath(), "runner", sessionId);
