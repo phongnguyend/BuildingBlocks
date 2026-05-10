@@ -49,8 +49,8 @@ app.MapPost("/run", async (ScriptRequest req) =>
     if (!languageConfigs.TryGetValue(language, out var config))
         return Results.BadRequest($"Unsupported language: '{language}'. Supported: {string.Join(", ", languageConfigs.Keys)}");
 
-    var jobId = Guid.NewGuid().ToString();
-    var workDir = Path.Combine(Path.GetTempPath(), "runner", jobId);
+    var sessionId = req.SessionId ?? Guid.NewGuid().ToString();
+    var workDir = Path.Combine(Path.GetTempPath(), "runner", sessionId);
     Directory.CreateDirectory(workDir);
 
     var scriptPath = Path.Combine(workDir, config.FileName);
@@ -131,6 +131,7 @@ app.MapPost("/run", async (ScriptRequest req) =>
 
         return Results.Ok(new
         {
+            sessionId,
             success = process.ExitCode == 0,
             stdout,
             stderr
@@ -139,16 +140,39 @@ app.MapPost("/run", async (ScriptRequest req) =>
     finally
     {
         // cleanup
-        try
+        if (!req.KeepSession)
         {
-            Directory.Delete(workDir, true);
+            try
+            {
+                Directory.Delete(workDir, true);
+            }
+            catch { }
         }
-        catch { }
+    }
+});
+
+app.MapDelete("/sessions/{sessionId}", (string sessionId) =>
+{
+    var workDir = Path.Combine(Path.GetTempPath(), "runner", sessionId);
+
+    if (!Directory.Exists(workDir))
+    {
+        return Results.NotFound($"Session '{sessionId}' not found.");
+    }
+
+    try
+    {
+        Directory.Delete(workDir, true);
+        return Results.Ok();
+    }
+    catch (Exception ex)
+    {
+        return Results.Problem($"Failed to delete session: {ex.Message}");
     }
 });
 
 app.Run();
 
-record ScriptRequest(string Code, string? Language = null, string[]? Arguments = null);
+record ScriptRequest(string Code, string? Language = null, string[]? Arguments = null, bool KeepSession = false, string? SessionId = null);
 
 record LanguageConfig(string DockerImage, string FileName, string RunCommand, string? ExtraDockerArgs = null, bool DisableNetwork = true, bool ReadOnly = true);
