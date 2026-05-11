@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-
-var builder = WebApplication.CreateBuilder(args);
+﻿var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -24,42 +22,19 @@ var languageConfigs = new Dictionary<string, LanguageConfig>(StringComparer.Ordi
     ["csharp"] = new("mcr.microsoft.com/dotnet/sdk:10.0", "script.cs", "dotnet run /app/script.cs", DisableNetwork: false, ReadOnly: false),
 };
 
+var runnerConfig = builder.Configuration.GetSection("Runner");
+var backend = runnerConfig["Backend"] ?? "Docker";
+
+IScriptRunner scriptRunner = backend.Equals("Kubernetes", StringComparison.OrdinalIgnoreCase)
+    ? new KubernetesScriptRunner(
+        @namespace: runnerConfig["Kubernetes:Namespace"] ?? "default",
+        timeoutSeconds: runnerConfig.GetValue<int>("Kubernetes:TimeoutSeconds", 600))
+    : new DockerScriptRunner();
+
 // Pre-pull container images
 foreach (var config in languageConfigs.Values)
 {
-    var pullPsi = new ProcessStartInfo
-    {
-        FileName = "docker",
-        Arguments = $"pull {config.DockerImage}",
-        RedirectStandardOutput = true,
-        RedirectStandardError = true
-    };
-
-    Console.WriteLine($"Pulling image: {config.DockerImage}...");
-
-    using var process = Process.Start(pullPsi)!;
-
-    var stdoutTask = process.StandardOutput.ReadToEndAsync();
-    var stderrTask = process.StandardError.ReadToEndAsync();
-
-    await process.WaitForExitAsync();
-
-    var stdout = await stdoutTask;
-    var stderr = await stderrTask;
-
-    if (!string.IsNullOrWhiteSpace(stdout))
-    {
-        Console.WriteLine(stdout);
-    }
-
-    if (!string.IsNullOrWhiteSpace(stderr))
-    {
-        Console.Error.WriteLine(stderr);
-    }
-
-    Console.WriteLine(process.ExitCode == 0
-        ? $"Successfully pulled: {config.DockerImage}"
-        : $"Failed to pull: {config.DockerImage} (exit code {process.ExitCode})");
+    await scriptRunner.PullImageAsync(config.DockerImage);
 }
 
 app.MapPost("/run", async (ScriptRequest req) =>
@@ -83,69 +58,12 @@ app.MapPost("/run", async (ScriptRequest req) =>
     var scriptPath = Path.Combine(workDir, config.FileName);
     await File.WriteAllTextAsync(scriptPath, req.Code);
 
-    var dockerArgsList = new List<string>();
-
-    dockerArgsList.AddRange(["run", "--rm"]);
-
-    if (config.DisableNetwork)
-    {
-        dockerArgsList.AddRange(["--network", "none"]);
-    }
-
-    dockerArgsList.AddRange([
-        "--memory", "256m",
-        "--cpus", "1.0"
-    ]);
-
-    if (config.ReadOnly)
-    {
-        dockerArgsList.Add("--read-only");
-    }
-
-    if (!string.IsNullOrWhiteSpace(config.ExtraDockerArgs))
-    {
-        dockerArgsList.AddRange(config.ExtraDockerArgs.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-    }
-
-    dockerArgsList.AddRange(["-v", $"{workDir}:/app"]);
-    dockerArgsList.Add(config.DockerImage);
-    dockerArgsList.AddRange(config.RunCommand.Split(' ', StringSplitOptions.RemoveEmptyEntries));
-
-    if (req.Arguments is { Length: > 0 })
-    {
-        dockerArgsList.AddRange(req.Arguments);
-    }
-
-    var dockerArgs = string.Join(" ", dockerArgsList.Select(a => a.Contains(' ') ? $"\"{a}\"" : a));
-
-    var psi = new ProcessStartInfo
-    {
-        FileName = "docker",
-        Arguments = dockerArgs,
-        RedirectStandardOutput = true,
-        RedirectStandardError = true
-    };
-
     try
     {
-        using var process = new Process { StartInfo = psi };
+        var result = await scriptRunner.RunAsync(config, workDir, req.Arguments ?? []);
 
-        process.Start();
-
-        var stdoutTask = process.StandardOutput.ReadToEndAsync();
-        var stderrTask = process.StandardError.ReadToEndAsync();
-
-        // timeout 5s
-        var timeoutTask = Task.Delay(600000);
-
-        var completed = await Task.WhenAny(
-            process.WaitForExitAsync(),
-            timeoutTask
-        );
-
-        if (completed == timeoutTask)
+        if (result.TimedOut)
         {
-            try { process.Kill(); } catch { }
             return Results.Ok(new
             {
                 success = false,
@@ -153,15 +71,12 @@ app.MapPost("/run", async (ScriptRequest req) =>
             });
         }
 
-        var stdout = await stdoutTask;
-        var stderr = await stderrTask;
-
         return Results.Ok(new
         {
             sessionId,
-            success = process.ExitCode == 0,
-            stdout,
-            stderr
+            success = result.Success,
+            stdout = result.Stdout,
+            stderr = result.Stderr
         });
     }
     finally
