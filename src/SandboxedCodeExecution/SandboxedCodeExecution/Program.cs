@@ -18,7 +18,7 @@ var languageConfigs = new Dictionary<string, LanguageConfig>(StringComparer.Ordi
 {
     ["python"] = new("python:3.11", "script.py", "python /app/script.py"),
     ["node"] = new("node:20", "script.js", "node /app/script.js"),
-    ["powershell"] = new("mcr.microsoft.com/powershell:lts", "script.ps1", "pwsh /app/script.ps1", ExtraDockerArgs: "--tmpfs /tmp"),
+    ["powershell"] = new("mcr.microsoft.com/powershell:lts", "script.ps1", "pwsh /app/script.ps1", ReadOnly: false),
     ["csharp"] = new("mcr.microsoft.com/dotnet/sdk:10.0", "script.cs", "dotnet run /app/script.cs", DisableNetwork: false, ReadOnly: false),
 };
 
@@ -29,7 +29,7 @@ IScriptRunner scriptRunner = backend.Equals("Kubernetes", StringComparison.Ordin
     ? new KubernetesScriptRunner(
         @namespace: runnerConfig["Kubernetes:Namespace"] ?? "default",
         timeoutSeconds: runnerConfig.GetValue<int>("Kubernetes:TimeoutSeconds", 600))
-    : new DockerScriptRunner();
+    : new DockerScriptRunner(true);
 
 // Pre-pull container images
 foreach (var config in languageConfigs.Values)

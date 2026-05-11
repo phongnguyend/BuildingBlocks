@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 
 class DockerScriptRunner(bool isRemote = false) : IScriptRunner
 {
@@ -122,7 +122,7 @@ class DockerScriptRunner(bool isRemote = false) : IScriptRunner
             TimedOut: false);
     }
 
-    // Remote: docker create ? docker cp ? docker start --attach.
+    // Remote: docker create → docker cp → docker start --attach.
     // docker cp transfers the script over the Docker API so no local path needs to exist on the daemon host.
     // --read-only is omitted because it disables the container's writable layer, which docker cp requires.
     // A tmpfs at /tmp provides a writable scratch space instead.
@@ -152,9 +152,6 @@ class DockerScriptRunner(bool isRemote = false) : IScriptRunner
         createPsi.ArgumentList.Add("256m");
         createPsi.ArgumentList.Add("--cpus");
         createPsi.ArgumentList.Add("1.0");
-
-        createPsi.ArgumentList.Add("--tmpfs");
-        createPsi.ArgumentList.Add("/tmp");
 
         if (!string.IsNullOrWhiteSpace(config.ExtraDockerArgs))
         {
