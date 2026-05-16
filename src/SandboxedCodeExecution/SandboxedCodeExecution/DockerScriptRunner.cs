@@ -40,10 +40,37 @@ class DockerScriptRunner(bool isRemote = false) : IScriptRunner
             : $"Failed to pull: {dockerImage} (exit code {process.ExitCode})");
     }
 
-    public Task<ScriptRunResult> RunAsync(LanguageConfig config, string workDir, string[] extraArguments, int timeoutMs = 600000)
+    public Task<ScriptRunResult> RunAsync(LanguageConfig config, string workDir, string sessionId, string[] extraArguments, int timeoutMs = 600000)
         => isRemote
-            ? RunRemoteAsync(config, workDir, extraArguments, timeoutMs)
+            ? RunRemoteAsync(config, workDir, sessionId, extraArguments, timeoutMs)
             : RunLocalAsync(config, workDir, extraArguments, timeoutMs);
+
+    public async Task<bool> DeleteSessionAsync(string sessionId)
+    {
+        var workDir = Path.Combine(Path.GetTempPath(), "runner", sessionId);
+        if (!Directory.Exists(workDir))
+        {
+            return false;
+        }
+
+        if (isRemote)
+        {
+            var containerName = $"runner-{sessionId}";
+            var rmPsi = new ProcessStartInfo
+            {
+                FileName = "docker",
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            };
+            rmPsi.ArgumentList.Add("rm");
+            rmPsi.ArgumentList.Add("-f");
+            rmPsi.ArgumentList.Add(containerName);
+            await RunProcessAsync(rmPsi);
+        }
+
+        Directory.Delete(workDir, true);
+        return true;
+    }
 
     // Local: bind-mount the workDir directly into the container.
     // Fast and simple; requires the Docker daemon to be on the same machine.
@@ -126,9 +153,9 @@ class DockerScriptRunner(bool isRemote = false) : IScriptRunner
     // docker cp transfers the script over the Docker API so no local path needs to exist on the daemon host.
     // --read-only is omitted because it disables the container's writable layer, which docker cp requires.
     // A tmpfs at /tmp provides a writable scratch space instead.
-    private async Task<ScriptRunResult> RunRemoteAsync(LanguageConfig config, string workDir, string[] extraArguments, int timeoutMs)
+    private async Task<ScriptRunResult> RunRemoteAsync(LanguageConfig config, string workDir, string sessionId, string[] extraArguments, int timeoutMs)
     {
-        var containerName = $"runner-{Guid.NewGuid().ToString("N")[..16]}";
+        var containerName = $"runner-{sessionId}";
 
         // 1. Create the container without starting it (cleanup is explicit in finally)
         var createPsi = new ProcessStartInfo
@@ -182,72 +209,55 @@ class DockerScriptRunner(bool isRemote = false) : IScriptRunner
             return new ScriptRunResult(Success: false, Stdout: string.Empty, Stderr: $"Failed to create container: {createResult.Stderr}", TimedOut: false);
         }
 
-        try
+        // 2. Copy script directory into the container via the Docker API.
+        //    workDir/. copies the contents and creates /app inside the container if it doesn't exist.
+        var cpPsi = new ProcessStartInfo
         {
-            // 2. Copy script directory into the container via the Docker API.
-            //    workDir/. copies the contents and creates /app inside the container if it doesn't exist.
-            var cpPsi = new ProcessStartInfo
-            {
-                FileName = "docker",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            cpPsi.ArgumentList.Add("cp");
-            cpPsi.ArgumentList.Add($"{workDir}/.");
-            cpPsi.ArgumentList.Add($"{containerName}:/app");
+            FileName = "docker",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        cpPsi.ArgumentList.Add("cp");
+        cpPsi.ArgumentList.Add($"{workDir}/.");
+        cpPsi.ArgumentList.Add($"{containerName}:/app");
 
-            var cpResult = await RunProcessAsync(cpPsi);
-            if (!cpResult.Success)
-            {
-                return new ScriptRunResult(Success: false, Stdout: string.Empty, Stderr: $"Failed to copy script: {cpResult.Stderr}", TimedOut: false);
-            }
-
-            // 3. Start the container and attach to its output
-            var startPsi = new ProcessStartInfo
-            {
-                FileName = "docker",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            startPsi.ArgumentList.Add("start");
-            startPsi.ArgumentList.Add("--attach");
-            startPsi.ArgumentList.Add(containerName);
-
-            using var process = new Process { StartInfo = startPsi };
-            process.Start();
-
-            var stdoutTask = process.StandardOutput.ReadToEndAsync();
-            var stderrTask = process.StandardError.ReadToEndAsync();
-            var timeoutTask = Task.Delay(timeoutMs);
-
-            var completed = await Task.WhenAny(process.WaitForExitAsync(), timeoutTask);
-
-            if (completed == timeoutTask)
-            {
-                try { process.Kill(); } catch { }
-                return new ScriptRunResult(Success: false, Stdout: string.Empty, Stderr: string.Empty, TimedOut: true);
-            }
-
-            return new ScriptRunResult(
-                Success: process.ExitCode == 0,
-                Stdout: await stdoutTask,
-                Stderr: await stderrTask,
-                TimedOut: false);
-        }
-        finally
+        var cpResult = await RunProcessAsync(cpPsi);
+        if (!cpResult.Success)
         {
-            // Force-remove the container (stops it first if still running due to timeout)
-            var rmPsi = new ProcessStartInfo
-            {
-                FileName = "docker",
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-            rmPsi.ArgumentList.Add("rm");
-            rmPsi.ArgumentList.Add("-f");
-            rmPsi.ArgumentList.Add(containerName);
-            await RunProcessAsync(rmPsi);
+            return new ScriptRunResult(Success: false, Stdout: string.Empty, Stderr: $"Failed to copy script: {cpResult.Stderr}", TimedOut: false);
         }
+
+        // 3. Start the container and attach to its output
+        var startPsi = new ProcessStartInfo
+        {
+            FileName = "docker",
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+        startPsi.ArgumentList.Add("start");
+        startPsi.ArgumentList.Add("--attach");
+        startPsi.ArgumentList.Add(containerName);
+
+        using var process = new Process { StartInfo = startPsi };
+        process.Start();
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+        var timeoutTask = Task.Delay(timeoutMs);
+
+        var completed = await Task.WhenAny(process.WaitForExitAsync(), timeoutTask);
+
+        if (completed == timeoutTask)
+        {
+            try { process.Kill(); } catch { }
+            return new ScriptRunResult(Success: false, Stdout: string.Empty, Stderr: string.Empty, TimedOut: true);
+        }
+
+        return new ScriptRunResult(
+            Success: process.ExitCode == 0,
+            Stdout: await stdoutTask,
+            Stderr: await stderrTask,
+            TimedOut: false);
     }
 
     private async Task<(bool Success, string Stdout, string Stderr)> RunProcessAsync(ProcessStartInfo psi)

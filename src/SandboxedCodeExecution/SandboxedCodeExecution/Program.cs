@@ -60,7 +60,7 @@ app.MapPost("/run", async (ScriptRequest req) =>
 
     try
     {
-        var result = await scriptRunner.RunAsync(config, workDir, req.Arguments ?? []);
+        var result = await scriptRunner.RunAsync(config, workDir, sessionId, req.Arguments ?? []);
 
         if (result.TimedOut)
         {
@@ -86,26 +86,19 @@ app.MapPost("/run", async (ScriptRequest req) =>
         {
             try
             {
-                Directory.Delete(workDir, true);
+                await scriptRunner.DeleteSessionAsync(sessionId);
             }
             catch { }
         }
     }
 });
 
-app.MapDelete("/sessions/{sessionId}", (string sessionId) =>
+app.MapDelete("/sessions/{sessionId}", async (string sessionId) =>
 {
-    var workDir = Path.Combine(Path.GetTempPath(), "runner", sessionId);
-
-    if (!Directory.Exists(workDir))
-    {
-        return Results.NotFound($"Session '{sessionId}' not found.");
-    }
-
     try
     {
-        Directory.Delete(workDir, true);
-        return Results.Ok();
+        var deleted = await scriptRunner.DeleteSessionAsync(sessionId);
+        return deleted ? Results.Ok() : Results.NotFound($"Session '{sessionId}' not found.");
     }
     catch (Exception ex)
     {
