@@ -1,7 +1,6 @@
 ﻿using Azure.Messaging.ServiceBus;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +18,7 @@ public class AzureServiceBusSubscriptionReceiver<TConsumer, T> : IMessageReceive
 
     public async Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
-        await ReceiveStringAsync(async retrievedMessage =>
+        await ReceiveBinaryDataAsync(async retrievedMessage =>
         {
             var message = JsonSerializer.Deserialize<Message<T>>(retrievedMessage);
             await action(message.Data, message.MetaData, cancellationToken);
@@ -27,6 +26,14 @@ public class AzureServiceBusSubscriptionReceiver<TConsumer, T> : IMessageReceive
     }
 
     private async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken)
+    {
+        await ReceiveBinaryDataAsync(async retrievedMessage =>
+        {
+            await action(retrievedMessage.ToString());
+        }, cancellationToken);
+    }
+
+    private async Task ReceiveBinaryDataAsync(Func<BinaryData, Task> action, CancellationToken cancellationToken)
     {
         await using var client = _options.CreateServiceBusClient();
         ServiceBusReceiver receiver = client.CreateReceiver(_options.Topic, _options.Subscription);
@@ -37,7 +44,7 @@ public class AzureServiceBusSubscriptionReceiver<TConsumer, T> : IMessageReceive
 
             if (retrievedMessage != null)
             {
-                await action(Encoding.UTF8.GetString(retrievedMessage.Body));
+                await action(retrievedMessage.Body);
                 await receiver.CompleteMessageAsync(retrievedMessage, cancellationToken);
             }
             else
