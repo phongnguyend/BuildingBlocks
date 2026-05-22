@@ -17,14 +17,22 @@ public class AzureQueueStorageReceiver<TConsumer, T> : IMessageReceiver<TConsume
 
     public async Task ReceiveAsync(Func<T, MetaData, CancellationToken, Task> action, CancellationToken cancellationToken = default)
     {
-        await ReceiveStringAsync(async retrievedMessage =>
+        await ReceiveBinaryDataAsync(async retrievedMessage =>
         {
             var message = JsonSerializer.Deserialize<Message<T>>(retrievedMessage);
             await action(message.Data, message.MetaData, cancellationToken);
         }, cancellationToken);
     }
 
-    public async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken = default)
+    private async Task ReceiveStringAsync(Func<string, Task> action, CancellationToken cancellationToken)
+    {
+        await ReceiveBinaryDataAsync(async retrievedMessage =>
+        {
+            await action(retrievedMessage.ToString());
+        }, cancellationToken);
+    }
+
+    private async Task ReceiveBinaryDataAsync(Func<BinaryData, Task> action, CancellationToken cancellationToken)
     {
         var queueClient = _options.CreateQueueClient();
         await queueClient.CreateIfNotExistsAsync(cancellationToken: cancellationToken);
@@ -39,7 +47,7 @@ public class AzureQueueStorageReceiver<TConsumer, T> : IMessageReceiver<TConsume
                 {
                     foreach (var retrievedMessage in retrievedMessages)
                     {
-                        await action(retrievedMessage.Body.ToString());
+                        await action(retrievedMessage.Body);
                         await queueClient.DeleteMessageAsync(retrievedMessage.MessageId, retrievedMessage.PopReceipt, cancellationToken);
                     }
                 }

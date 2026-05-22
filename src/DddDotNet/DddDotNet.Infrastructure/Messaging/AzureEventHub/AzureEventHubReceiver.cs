@@ -2,7 +2,6 @@
 using Azure.Messaging.EventHubs.Processor;
 using DddDotNet.Domain.Infrastructure.Messaging;
 using System;
-using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,8 +27,7 @@ public class AzureEventHubReceiver<TConsumer, T> : IMessageReceiver<TConsumer, T
         {
             try
             {
-                var messageAsString = Encoding.UTF8.GetString(eventArgs.Data.EventBody);
-                var message = JsonSerializer.Deserialize<Message<T>>(messageAsString);
+                var message = JsonSerializer.Deserialize<Message<T>>(eventArgs.Data.EventBody);
                 await action(message.Data, message.MetaData, cancellationToken);
                 await eventArgs.UpdateCheckpointAsync(cancellationToken);
             }
