@@ -1,0 +1,13 @@
+# Configure vm.max_map_count when running Elasticsearch in Docker/Rancher Desktop on Windows
+
+Docker Desktop:
+```
+wsl -d docker-desktop
+sysctl -w vm.max_map_count=262144
+```
+
+Rancher Desktop:
+```
+rdctl shell
+sysctl -w vm.max_map_count=262144
+```
