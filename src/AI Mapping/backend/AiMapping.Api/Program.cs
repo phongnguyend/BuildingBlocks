@@ -30,7 +30,7 @@ builder.Services.AddSingleton<XlsxTabularFileParser>();
 builder.Services.AddSingleton<TabularFileParser>();
 builder.Services.AddSingleton<HeaderRowDetector>();
 builder.Services.AddSingleton<FallbackHeaderMappingService>();
-builder.Services.AddHttpClient<OpenAiHeaderMappingService>();
+builder.Services.AddSingleton<OpenAiHeaderMappingService>();
 builder.Services.AddScoped<IHeaderMappingSuggester, HeaderMappingSuggester>();
 builder.Services.AddScoped<ImportWorkflow>();
 

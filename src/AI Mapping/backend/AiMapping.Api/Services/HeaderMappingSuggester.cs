@@ -1,12 +1,11 @@
 using System.Globalization;
-using System.Net.Http.Headers;
-using System.Net.Http.Json;
-using System.Text;
+using System.ClientModel;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using AiMapping.Api.Models;
 using AiMapping.Api.Options;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Options;
 
 namespace AiMapping.Api.Services;
@@ -59,7 +58,7 @@ public sealed class HeaderMappingSuggester : IHeaderMappingSuggester
 
             return MergeWithFallback(sourceHeaders, aiSuggestions, fallbackSuggestions);
         }
-        catch (Exception ex) when (ex is HttpRequestException or JsonException or TaskCanceledException)
+        catch (Exception ex) when (ex is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "OpenAI header mapping failed. Falling back to deterministic mapping.");
             return fallbackSuggestions;
@@ -99,16 +98,35 @@ public sealed class OpenAiHeaderMappingService
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    private readonly HttpClient _httpClient;
     private readonly OpenAiOptions _options;
+    private readonly IChatClient? _chatClient;
 
-    public OpenAiHeaderMappingService(HttpClient httpClient, IOptions<OpenAiOptions> options)
+    public OpenAiHeaderMappingService(IOptions<OpenAiOptions> options)
     {
-        _httpClient = httpClient;
         _options = options.Value;
+        _chatClient = IsConfigured
+            ? CreateChatClient(_options).AsIChatClient()
+            : null;
     }
 
     public bool IsConfigured => !string.IsNullOrWhiteSpace(_options.ApiKey);
+
+    private static OpenAI.Chat.ChatClient CreateChatClient(OpenAiOptions options)
+    {
+        var clientOptions = string.IsNullOrWhiteSpace(options.Endpoint)
+            ? null
+            : new OpenAI.OpenAIClientOptions
+            {
+                Endpoint = new Uri(options.Endpoint, UriKind.Absolute)
+            };
+
+        return clientOptions is null
+            ? new OpenAI.Chat.ChatClient(options.Model, options.ApiKey)
+            : new OpenAI.Chat.ChatClient(
+                model: options.Model,
+                credential: new ApiKeyCredential(options.ApiKey!),
+                options: clientOptions);
+    }
 
     public async Task<IReadOnlyList<MappingSuggestion>> SuggestAsync(
         IReadOnlyList<string> sourceHeaders,
@@ -121,16 +139,28 @@ public sealed class OpenAiHeaderMappingService
             return Array.Empty<MappingSuggestion>();
         }
 
-        using var request = new HttpRequestMessage(HttpMethod.Post, _options.Endpoint);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", _options.ApiKey);
-        request.Content = JsonContent.Create(BuildRequestPayload(_options.Model, sourceHeaders, targetHeaders, sampleRows), mediaType: null, options: JsonOptions);
+        if (_chatClient is null)
+        {
+            return Array.Empty<MappingSuggestion>();
+        }
 
-        using var response = await _httpClient.SendAsync(request, cancellationToken);
-        response.EnsureSuccessStatusCode();
+        var targetKeys = targetHeaders.Select(header => header.Key).Append(IgnoredTargetKey).ToArray();
+        var schema = JsonSerializer.SerializeToElement(BuildResponseSchema(targetKeys), JsonOptions);
+        var messages = BuildMessages(sourceHeaders, targetHeaders, sampleRows);
+        var response = await _chatClient.GetResponseAsync(
+            messages,
+            new ChatOptions
+            {
+                Temperature = 0,
+                MaxOutputTokens = 1200,
+                ResponseFormat = ChatResponseFormat.ForJsonSchema(
+                    schema,
+                    schemaName: "header_mapping_suggestions",
+                    schemaDescription: "Suggested mappings from uploaded file headers to standard fields.")
+            },
+            cancellationToken);
 
-        await using var responseStream = await response.Content.ReadAsStreamAsync(cancellationToken);
-        using var document = await JsonDocument.ParseAsync(responseStream, cancellationToken: cancellationToken);
-        var outputText = ExtractOutputText(document.RootElement);
+        var outputText = response.Text;
 
         if (string.IsNullOrWhiteSpace(outputText))
         {
@@ -164,17 +194,15 @@ public sealed class OpenAiHeaderMappingService
             .ToList();
     }
 
-    private static object BuildRequestPayload(
-        string model,
+    private static IReadOnlyList<ChatMessage> BuildMessages(
         IReadOnlyList<string> sourceHeaders,
         IReadOnlyList<PredefinedHeader> targetHeaders,
         IReadOnlyList<IReadOnlyList<string>> sampleRows)
     {
-        var targetKeys = targetHeaders.Select(header => header.Key).Append(IgnoredTargetKey).ToArray();
         var input = new
         {
             sourceHeaders,
-            targetFields = targetHeaders.Select(header => new
+            standardFields = targetHeaders.Select(header => new
             {
                 header.Key,
                 header.DisplayName,
@@ -185,35 +213,15 @@ public sealed class OpenAiHeaderMappingService
             sampleRows
         };
 
-        return new
-        {
-            model,
-            input = new object[]
-            {
-                new
-                {
-                    role = "system",
-                    content = "You are an AI data import assistant. Map each spreadsheet source header to at most one predefined DTO field. Use __ignore when no target is a good semantic fit. Return JSON that exactly matches the schema."
-                },
-                new
-                {
-                    role = "user",
-                    content = JsonSerializer.Serialize(input, JsonOptions)
-                }
-            },
-            text = new
-            {
-                format = new
-                {
-                    type = "json_schema",
-                    name = "header_mapping_suggestions",
-                    strict = true,
-                    schema = BuildResponseSchema(targetKeys)
-                }
-            },
-            temperature = 0,
-            max_output_tokens = 1200
-        };
+        return
+        [
+            new ChatMessage(
+                ChatRole.System,
+                "You are an AI data import assistant. Map each spreadsheet source header to at most one predefined standard field. Use __ignore when no target is a good semantic fit. Return JSON that exactly matches the requested schema."),
+            new ChatMessage(
+                ChatRole.User,
+                JsonSerializer.Serialize(input, JsonOptions))
+        ];
     }
 
     private static object BuildResponseSchema(IReadOnlyList<string> targetKeys)
@@ -244,40 +252,6 @@ public sealed class OpenAiHeaderMappingService
             },
             ["required"] = new[] { "mappings" }
         };
-    }
-
-    private static string? ExtractOutputText(JsonElement root)
-    {
-        if (root.TryGetProperty("output_text", out var directOutputText)
-            && directOutputText.ValueKind == JsonValueKind.String)
-        {
-            return directOutputText.GetString();
-        }
-
-        if (!root.TryGetProperty("output", out var output) || output.ValueKind != JsonValueKind.Array)
-        {
-            return null;
-        }
-
-        var builder = new StringBuilder();
-
-        foreach (var outputItem in output.EnumerateArray())
-        {
-            if (!outputItem.TryGetProperty("content", out var content) || content.ValueKind != JsonValueKind.Array)
-            {
-                continue;
-            }
-
-            foreach (var contentItem in content.EnumerateArray())
-            {
-                if (contentItem.TryGetProperty("text", out var text) && text.ValueKind == JsonValueKind.String)
-                {
-                    builder.Append(text.GetString());
-                }
-            }
-        }
-
-        return builder.Length == 0 ? null : builder.ToString();
     }
 
     private sealed record OpenAiMappingEnvelope(IReadOnlyList<OpenAiMappingItem> Mappings);
