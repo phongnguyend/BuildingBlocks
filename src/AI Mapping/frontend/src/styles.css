@@ -239,10 +239,14 @@ td {
 }
 
 .mapping-table td:first-child {
-  min-width: 190px;
+  min-width: 230px;
 }
 
 .mapping-table td:nth-child(2) {
+  min-width: 240px;
+}
+
+.mapping-table td:nth-child(3) {
   min-width: 260px;
   color: #52615e;
 }
@@ -260,8 +264,8 @@ td {
   line-height: 1.35;
 }
 
-.mapping-table tr.duplicate td {
-  background: #fffbf0;
+.mapping-table tr.missing-required td {
+  background: #fff8e7;
 }
 
 select {

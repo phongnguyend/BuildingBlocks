@@ -111,11 +111,22 @@ export default function App() {
     }
   }
 
-  function updateMapping(sourceHeader, targetKey) {
-    setMapping((current) => ({
-      ...current,
-      [sourceHeader]: targetKey
-    }));
+  function updateMapping(targetKey, sourceHeader) {
+    setMapping((current) => {
+      const next = { ...current };
+
+      for (const currentSourceHeader of Object.keys(next)) {
+        if (next[currentSourceHeader] === targetKey || currentSourceHeader === sourceHeader) {
+          next[currentSourceHeader] = '';
+        }
+      }
+
+      if (sourceHeader) {
+        next[sourceHeader] = targetKey;
+      }
+
+      return next;
+    });
   }
 
   return (
@@ -218,14 +229,34 @@ function ImportSummary({ analysis, mapping, result }) {
 }
 
 function MappingModal({ analysis, mapping, busy, canComplete, onChange, onCancel, onComplete }) {
-  const duplicateTargets = useMemo(() => {
-    const counts = {};
-    for (const targetKey of Object.values(mapping).filter(Boolean)) {
-      counts[targetKey] = (counts[targetKey] ?? 0) + 1;
+  const selectedSourceByTarget = useMemo(() => {
+    const selected = {};
+
+    for (const [sourceHeader, targetKey] of Object.entries(mapping)) {
+      if (targetKey) {
+        selected[targetKey] = sourceHeader;
+      }
     }
 
-    return new Set(Object.entries(counts).filter(([, count]) => count > 1).map(([key]) => key));
+    return selected;
   }, [mapping]);
+
+  const suggestionByTarget = useMemo(() => {
+    const suggestions = {};
+
+    for (const suggestion of analysis.suggestedMappings) {
+      if (!suggestion.targetKey) {
+        continue;
+      }
+
+      const current = suggestions[suggestion.targetKey];
+      if (!current || suggestion.confidence > current.confidence) {
+        suggestions[suggestion.targetKey] = suggestion;
+      }
+    }
+
+    return suggestions;
+  }, [analysis.suggestedMappings]);
 
   return (
     <div className="modal-backdrop" role="presentation">
@@ -244,42 +275,57 @@ function MappingModal({ analysis, mapping, busy, canComplete, onChange, onCancel
           <table className="mapping-table">
             <thead>
               <tr>
-                <th>Source header</th>
+                <th>Standard field</th>
+                <th>Header in file</th>
                 <th>Sample values</th>
-                <th>Target DTO field</th>
                 <th>Confidence</th>
               </tr>
             </thead>
             <tbody>
-              {analysis.sourceHeaders.map((sourceHeader, index) => {
-                const suggestion = analysis.suggestedMappings.find(
-                  (item) => item.sourceHeader.toLowerCase() === sourceHeader.toLowerCase()
+              {analysis.targetHeaders.map((targetHeader) => {
+                const selectedSourceHeader = selectedSourceByTarget[targetHeader.key] ?? '';
+                const suggestion = suggestionByTarget[targetHeader.key];
+                const selectedSourceIndex = analysis.sourceHeaders.findIndex(
+                  (sourceHeader) => sourceHeader.toLowerCase() === selectedSourceHeader.toLowerCase()
                 );
-                const targetKey = mapping[sourceHeader] ?? '';
-                const sampleValues = analysis.previewRows
-                  .map((row) => row[index])
-                  .filter(Boolean)
-                  .slice(0, 3);
+                const sampleValues = selectedSourceIndex >= 0
+                  ? analysis.previewRows
+                    .map((row) => row[selectedSourceIndex])
+                    .filter(Boolean)
+                    .slice(0, 3)
+                  : [];
+                const confidence = selectedSourceHeader === suggestion?.sourceHeader
+                  ? suggestion.confidence
+                  : 0;
 
                 return (
-                  <tr key={sourceHeader} className={duplicateTargets.has(targetKey) ? 'duplicate' : ''}>
+                  <tr key={targetHeader.key} className={targetHeader.required && !selectedSourceHeader ? 'missing-required' : ''}>
                     <td>
-                      <strong>{sourceHeader}</strong>
-                      <span>{suggestion?.reason ?? 'No suggestion'}</span>
+                      <strong>{targetHeader.displayName}</strong>
+                      <span>
+                        {targetHeader.key} - {targetHeader.dataType}
+                        {targetHeader.required ? ' - Required' : ''}
+                      </span>
+                      <span>Aliases: {targetHeader.aliases.join(', ')}</span>
                     </td>
-                    <td>{sampleValues.join(', ') || '-'}</td>
                     <td>
-                      <select value={targetKey} onChange={(event) => onChange(sourceHeader, event.target.value)}>
-                        <option value="">Ignore</option>
-                        {analysis.targetHeaders.map((targetHeader) => (
-                          <option key={targetHeader.key} value={targetHeader.key}>
-                            {targetHeader.displayName}
+                      <select value={selectedSourceHeader} onChange={(event) => onChange(targetHeader.key, event.target.value)}>
+                        <option value="">No source header</option>
+                        {analysis.sourceHeaders.map((sourceHeader) => (
+                          <option key={sourceHeader} value={sourceHeader}>
+                            {sourceHeader}
                           </option>
                         ))}
                       </select>
+                      <span>
+                        {suggestion
+                          ? `Suggested: ${suggestion.sourceHeader}`
+                          : 'No suggestion'}
+                      </span>
                     </td>
+                    <td>{sampleValues.join(', ') || '-'}</td>
                     <td>
-                      <span className="confidence">{Math.round((suggestion?.confidence ?? 0) * 100)}%</span>
+                      <span className="confidence">{Math.round(confidence * 100)}%</span>
                     </td>
                   </tr>
                 );
@@ -287,10 +333,6 @@ function MappingModal({ analysis, mapping, busy, canComplete, onChange, onCancel
             </tbody>
           </table>
         </div>
-
-        {duplicateTargets.size > 0 && (
-          <div className="notice warning">Duplicate target fields will keep the first selected source column.</div>
-        )}
 
         <footer className="modal-actions">
           <button type="button" className="secondary" onClick={onCancel} disabled={busy}>
@@ -309,7 +351,7 @@ function ResultGrid({ result }) {
   return (
     <section className="grid-section">
       <header className="grid-header">
-        <h2>Mapped DTO Objects</h2>
+        <h2>Mapped Records</h2>
         <div className="grid-stats">
           <span>{result.mappedRows} mapped</span>
           <span>{result.skippedRows} skipped</span>
