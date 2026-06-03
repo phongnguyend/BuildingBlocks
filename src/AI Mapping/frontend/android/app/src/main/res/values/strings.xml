@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">AI Mapping</string>
+    <string name="title_activity_main">AI Mapping</string>
+    <string name="package_name">com.buildingblocks.aimapping</string>
+    <string name="custom_url_scheme">com.buildingblocks.aimapping</string>
+</resources>

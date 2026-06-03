@@ -6,10 +6,17 @@
 **/node_modules/
 **/dist/
 
+# Android
+**/.gradle/
+**/build/
+**/local.properties
+
 # Local environment
 .env
 .env.*
 !.env.example
+!.env.mobile
+!**/.env.mobile
 
 # OS/editor
 .DS_Store

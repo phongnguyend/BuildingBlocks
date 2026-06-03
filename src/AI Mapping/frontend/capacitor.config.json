@@ -1,0 +1,9 @@
+{
+  "appId": "com.buildingblocks.aimapping",
+  "appName": "AI Mapping",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}
