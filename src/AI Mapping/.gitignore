@@ -15,8 +15,10 @@
 .env
 .env.*
 !.env.example
-!.env.mobile
-!**/.env.mobile
+!.env.android
+!**/.env.android
+!.env.ios
+!**/.env.ios
 
 # OS/editor
 .DS_Store

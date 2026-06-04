@@ -34,13 +34,14 @@ dotnet user-secrets set "OpenAI:Model" "gpt-4o-mini"
 
 Without an API key, the backend uses a deterministic similarity mapper.
 
-## Mobile
+## Android
 
 The frontend is configured with Capacitor for Android.
 
 ```powershell
 cd frontend
 npm install
+npx cap add android
 npm run mobile:sync:android
 ```
 
@@ -56,7 +57,7 @@ Run on an Android emulator or connected device:
 npm run mobile:run:android
 ```
 
-The mobile build uses `frontend/.env.mobile`, which points API requests at `http://10.0.2.2:5088` for Android emulator access to the host machine backend. Use your machine LAN IP instead for a physical device.
+The Android mobile build uses `frontend/.env.android`, which points API requests at `http://10.0.2.2:5088` for Android emulator access to the host machine backend. Use your machine LAN IP instead for a physical device.
 
 For local Android development, `frontend/capacitor.config.json` uses `server.androidScheme = "http"` to avoid mixed-content blocking when the WebView calls the local HTTP backend. For production, use an HTTPS API endpoint and switch the scheme back to `https`.
 
@@ -90,3 +91,57 @@ sdk.dir=C:/Users/phongnguyend/AppData/Local/Android/Sdk
 ```
 
 `local.properties` is machine-specific and ignored by Git.
+
+### iOS
+
+The frontend is also configured with Capacitor for iOS. The iOS project can be generated and synced from this repo, but build, simulator run, device test, archive, TestFlight, and App Store publishing require macOS with Xcode and Xcode Command Line Tools.
+
+Capacitor 8 requires Node 22 or higher and Xcode 26.0 or higher for iOS development. The iOS mobile build uses `frontend/.env.ios`, which points API requests at `http://localhost:5088` for iOS simulator access to the Mac host backend. Use your machine LAN IP or an HTTPS API endpoint for a physical iPhone.
+
+On a Mac:
+
+```bash
+cd frontend
+npm install
+npx cap add ios
+npm run mobile:sync:ios
+```
+
+Open the native project in Xcode:
+
+```bash
+npm run mobile:open:ios
+```
+
+Run on an iOS simulator or paired device:
+
+```bash
+npm run mobile:run:ios
+```
+
+In Xcode, select the `App` scheme, choose a simulator or device, configure signing under `Signing & Capabilities`, then run with the play button. For a physical device or TestFlight/App Store distribution, use an Apple Developer account and a valid bundle identifier.
+
+Test locally:
+
+```bash
+npm run mobile:sync:ios
+npm run mobile:run:ios
+```
+
+Archive and publish from Xcode:
+
+1. In Xcode, set the app version and build number.
+2. Select a generic iOS device or `Any iOS Device`.
+3. Choose `Product > Archive`.
+4. In Organizer, validate the archive.
+5. Use `Distribute App > App Store Connect > Upload`.
+6. In App Store Connect, use TestFlight for beta testing or submit the build for App Review.
+
+Apple TestFlight builds are available for testing for up to 90 days. External TestFlight testers may require beta app review before they can install the build.
+
+Useful references:
+
+- Capacitor iOS setup: https://capacitorjs.com/docs/ios
+- Capacitor environment setup: https://capacitorjs.com/docs/getting-started/environment-setup
+- Apple archive/upload flow: https://help.apple.com/xcode/mac/current/en.lproj/dev442d7f2ca.html
+- TestFlight overview: https://developer.apple.com/help/app-store-connect/test-a-beta-version/testflight-overview/

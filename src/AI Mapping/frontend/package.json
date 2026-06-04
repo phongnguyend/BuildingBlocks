@@ -7,17 +7,23 @@
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
     "preview": "vite preview --host 127.0.0.1",
-    "build:mobile": "vite build --mode mobile",
+    "build:mobile:android": "vite build --mode android",
+    "build:mobile:ios": "vite build --mode ios",
     "cap": "cap",
-    "mobile:sync:android": "npm run build:mobile && cap sync android",
+    "mobile:sync:android": "npm run build:mobile:android && cap sync android",
     "mobile:build:android": "npm run mobile:sync:android && cd android && gradlew.bat assembleDebug",
     "mobile:open:android": "npm run mobile:sync:android && cap open android",
     "mobile:run:android": "npm run mobile:sync:android && cap run android",
-    "mobile:doctor:android": "cap doctor android"
+    "mobile:doctor:android": "cap doctor android",
+    "mobile:sync:ios": "npm run build:mobile:ios && cap sync ios",
+    "mobile:open:ios": "npm run mobile:sync:ios && cap open ios",
+    "mobile:run:ios": "npm run mobile:sync:ios && cap run ios",
+    "mobile:doctor:ios": "cap doctor ios"
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
