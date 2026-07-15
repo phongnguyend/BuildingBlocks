@@ -1,0 +1,27 @@
+<Solution>
+  <Folder Name="/Core/">
+    <Project Path="DddDotNet.Application/DddDotNet.Application.csproj" />
+    <Project Path="DddDotNet.Domain/DddDotNet.Domain.csproj" />
+  </Folder>
+  <Folder Name="/CrossCuttingConcerns/">
+    <Project Path="DddDotNet.CrossCuttingConcerns/DddDotNet.CrossCuttingConcerns.csproj" />
+  </Folder>
+  <Folder Name="/Infrastructure/">
+    <Project Path="DddDotNet.Infrastructure/DddDotNet.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path=".editorconfig" />
+    <File Path="Directory.Build.props" />
+    <File Path="global.json" />
+  </Folder>
+  <Folder Name="/Tests/">
+    <Project Path="DddDotNet.AzureFunctions/DddDotNet.AzureFunctions.csproj" />
+    <Project Path="DddDotNet.IntegrationTests/DddDotNet.IntegrationTests.csproj" />
+    <Project Path="DddDotNet.MessageReceivers.AzureEventHubs/DddDotNet.MessageReceivers.AzureEventHubs.csproj" />
+    <Project Path="DddDotNet.MessageReceivers.AzureQueueStorage/DddDotNet.MessageReceivers.AzureQueueStorage.csproj" />
+    <Project Path="DddDotNet.MessageReceivers.AzureServiceBus/DddDotNet.MessageReceivers.AzureServiceBus.csproj" />
+    <Project Path="DddDotNet.MessageReceivers.Kafka/DddDotNet.MessageReceivers.Kafka.csproj" />
+    <Project Path="DddDotNet.MessageReceivers.RabbitMQ/DddDotNet.MessageReceivers.RabbitMQ.csproj" />
+    <Project Path="DddDotNet.MessageReceivers/DddDotNet.MessageReceivers.csproj" />
+  </Folder>
+</Solution>
