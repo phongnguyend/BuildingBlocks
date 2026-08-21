@@ -1,5 +1,6 @@
 using Engine = global::TemplateEngine.TemplateEngine;
 
+
 namespace TemplateEngine.Tests;
 
 public sealed class TemplateEngineTests
@@ -72,6 +73,52 @@ public sealed class TemplateEngineTests
     public void Render_RejectsMalformedIndexes(string expression)
     {
         Assert.Throws<TemplateSyntaxException>(() => _engine.Render($"{{{{ {expression} }}}}", new { Items = Array.Empty<object>() }));
+    }
+
+    [Fact]
+    public void Render_InvokesRootAndNestedMethodsInPropertyPaths()
+    {
+        var result = _engine.Render(
+            "{{ GetSomething() }} / {{ GetCustomer().Profile.DisplayName }} / " +
+            "{{ GetCustomer().GetAddresses()[0].City }}",
+            new MethodModel());
+
+        Assert.Equal("root / Phong / Bangkok", result);
+    }
+
+    [Fact]
+    public void Render_InvokesMethodsOnLoopVariablesAndUsesMethodResultsAsCollections()
+    {
+        var result = _engine.Render(
+            "{{ foreach product in GetProducts() }}{{ product.GetSomething() }};{{ end }}",
+            new MethodModel());
+
+        Assert.Equal("Product A;Product B;", result);
+    }
+
+    [Fact]
+    public void Render_UsesMethodCallsInConditions()
+    {
+        Assert.Equal("enabled", _engine.Render("{{ if IsEnabled() }}enabled{{ end }}", new MethodModel()));
+    }
+
+    [Fact]
+    public void Render_UsesEmptyTextForMissingMethodsOrNullMethodResults()
+    {
+        Assert.Equal(
+            "ab",
+            _engine.Render("a{{ MissingMethod() }}{{ GetNothing().Name }}b", new MethodModel()));
+    }
+
+    [Theory]
+    [InlineData("GetSomething(1)")]
+    [InlineData("GetSomething(")]
+    [InlineData("GetSomething)")]
+    [InlineData("GetSomething()suffix")]
+    public void Render_RejectsMethodsWithArgumentsOrMalformedCalls(string expression)
+    {
+        Assert.Throws<TemplateSyntaxException>(() =>
+            _engine.Render($"{{{{ {expression} }}}}", new MethodModel()));
     }
 
     [Fact]
@@ -153,5 +200,35 @@ public sealed class TemplateEngineTests
     public void Render_UsesEmptyTextForMissingOrNullValues()
     {
         Assert.Equal("ab", _engine.Render("a{{ Missing }}b{{ NullValue }}", new { NullValue = (string?)null }));
+    }
+
+    private sealed class MethodModel
+    {
+        public string GetSomething() => "root";
+
+        public Customer GetCustomer() => new();
+
+        public IReadOnlyList<Product> GetProducts() =>
+            [new("Product A"), new("Product B")];
+
+        public bool IsEnabled() => true;
+
+        public object? GetNothing() => null;
+    }
+
+    private sealed class Customer
+    {
+        public Profile Profile { get; } = new("Phong");
+
+        public Address[] GetAddresses() => [new("Bangkok")];
+    }
+
+    private sealed record Profile(string DisplayName);
+
+    private sealed record Address(string City);
+
+    private sealed record Product(string Name)
+    {
+        public string GetSomething() => Name;
     }
 }

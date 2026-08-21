@@ -7,5 +7,5 @@ public enum TokenType
     Expression
 }
 
-/// <summary>A lexical token produced from template text.</summary>
+/// <summary>Represents a lexical token produced from template text.</summary>
 public sealed record Token(TokenType Type, string Value);

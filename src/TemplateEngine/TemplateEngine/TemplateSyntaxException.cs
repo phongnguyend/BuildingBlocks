@@ -1,6 +1,6 @@
 namespace TemplateEngine;
 
-/// <summary>Represents invalid template syntax.</summary>
+/// <summary>Thrown when template syntax is invalid.</summary>
 public sealed class TemplateSyntaxException : Exception
 {
     public TemplateSyntaxException(string message)

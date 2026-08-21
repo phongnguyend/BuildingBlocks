@@ -1,6 +1,6 @@
 namespace TemplateEngine;
 
-/// <summary>Splits template text into literal text and expression tokens.</summary>
+/// <summary>Tokenizes template text into literal text and expressions.</summary>
 public static class Tokenizer
 {
     public static IReadOnlyList<Token> Tokenize(string template)

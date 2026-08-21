@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace TemplateEngine;
 
-/// <summary>Provides model and scoped-variable lookup while rendering.</summary>
+/// <summary>Provides model, property, index, and scoped-variable lookup while rendering.</summary>
 public sealed class RenderContext
 {
     private readonly object? _model;
@@ -31,8 +31,8 @@ public sealed class RenderContext
     }
 
     /// <summary>
-    /// Resolves a variable or model path such as <c>user.Address.City</c> or
-    /// <c>orders[0].Lines[1].Name</c>.
+    /// Resolves a variable or model path such as <c>user.Address.City</c>,
+    /// <c>orders[0].Lines[1].Name</c>, or <c>user.GetAddress().City</c>.
     /// </summary>
     public object? Resolve(string expression)
     {
@@ -57,10 +57,21 @@ public sealed class RenderContext
                 throw InvalidPath(expression);
             }
 
-            var memberName = member.ToString();
+            var isMethodCall = member.EndsWith("()", StringComparison.Ordinal);
+            var memberNameSpan = isMethodCall ? member[..^2].TrimEnd() : member;
+            if (memberNameSpan.IsEmpty || memberNameSpan.ContainsAny('(', ')'))
+            {
+                throw InvalidPath(expression);
+            }
+
+            var memberName = memberNameSpan.ToString();
             if (isFirstMember)
             {
-                if (!TryGetVariable(memberName, out current))
+                if (isMethodCall)
+                {
+                    current = ResolveMethod(_model, memberName);
+                }
+                else if (!TryGetVariable(memberName, out current))
                 {
                     current = ResolveMember(_model, memberName);
                 }
@@ -69,7 +80,9 @@ public sealed class RenderContext
             }
             else
             {
-                current = ResolveMember(current, memberName);
+                current = isMethodCall
+                    ? ResolveMethod(current, memberName)
+                    : ResolveMember(current, memberName);
             }
 
             SkipWhitespace(path, ref position);
@@ -143,6 +156,23 @@ public sealed class RenderContext
         return property is null || property.GetIndexParameters().Length != 0
             ? null
             : property.GetValue(instance);
+    }
+
+    private static object? ResolveMethod(object? instance, string methodName)
+    {
+        if (instance is null)
+        {
+            return null;
+        }
+
+        var method = instance.GetType()
+            .GetMethods(BindingFlags.Instance | BindingFlags.Public)
+            .FirstOrDefault(candidate =>
+                candidate.Name.Equals(methodName, StringComparison.Ordinal) &&
+                !candidate.ContainsGenericParameters &&
+                candidate.GetParameters().Length == 0);
+
+        return method?.Invoke(instance, null);
     }
 
     private static object? ResolveIndex(object? instance, int index)

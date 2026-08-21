@@ -5,7 +5,7 @@ using System.Text;
 
 namespace TemplateEngine;
 
-/// <summary>A node in a parsed template's abstract syntax tree.</summary>
+/// <summary>Represents a node in a parsed template's abstract syntax tree.</summary>
 public abstract class TemplateNode
 {
     public abstract void Render(RenderContext context, StringBuilder output);

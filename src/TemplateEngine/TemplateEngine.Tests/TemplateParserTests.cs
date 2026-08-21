@@ -1,5 +1,6 @@
 namespace TemplateEngine.Tests;
 
+
 public sealed class TemplateParserTests
 {
     [Theory]

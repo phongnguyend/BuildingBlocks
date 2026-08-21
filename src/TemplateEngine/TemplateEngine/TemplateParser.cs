@@ -1,6 +1,6 @@
 namespace TemplateEngine;
 
-/// <summary>Builds an abstract syntax tree from template tokens.</summary>
+/// <summary>Parses template tokens into an abstract syntax tree.</summary>
 public static class TemplateParser
 {
     public static IReadOnlyList<TemplateNode> Parse(IReadOnlyList<Token> tokens)

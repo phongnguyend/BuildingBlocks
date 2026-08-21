@@ -2,7 +2,7 @@ using System.Text;
 
 namespace TemplateEngine;
 
-/// <summary>Renders templates containing variables, conditions, and loops.</summary>
+/// <summary>Renders templates containing expressions, conditions, and loops.</summary>
 public sealed class TemplateEngine
 {
     public string Render<T>(string template, T model)

@@ -16,6 +16,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="../../src/TemplateEngine/TemplateEngine.csproj" />
+    <ProjectReference Include="../TemplateEngine/TemplateEngine.csproj" />
   </ItemGroup>
 </Project>
